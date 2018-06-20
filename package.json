@@ -1,0 +1,20 @@
+{
+  "name": "hhsc-scraper",
+  "version": "1.0.0",
+  "description": "Ask Luke",
+  "main": "index.ts",
+  "scripts": {
+    "test": "ts-node node_modules/tape/bin/tape src/**/spec.ts",
+    "scrape": "build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sa-express-news/hhsc-scraper.git"
+  },
+  "author": "Luke Whyte",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sa-express-news/hhsc-scraper/issues"
+  },
+  "homepage": "https://github.com/sa-express-news/hhsc-scraper#readme"
+}

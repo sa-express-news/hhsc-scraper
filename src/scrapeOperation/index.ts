@@ -3,45 +3,30 @@ import * as _ from 'lodash';
 // interfaces
 import { 
 	FacilityHash,
+	FacilityResponse,
 	DeficiencyHash,
-	OperationHash,
+	DeficiencyResponse,
 } from '../interfaces';
 
 // models
 import scrapeFacilityDetails 	from '../scrapeFacilityDetails';
 import scrapeDeficiencyDetails 	from '../scrapeDeficiencyDetails';
 
-export const catchError = (err: any) => {
-	console.error(err);
-	return false;
+const handleError = (err: any) => {
+	console.error(err)
+	return { isSuccessful: false };
 }
 
-export const mergeResults = (hashes) => {
-	let facilityHash: FacilityHash;
-	let deficiencies: Array<DeficiencyHash>;
-
-	if (hashes.length !== 2) return false;
-
-	for (let i = 0; i < hashes.length; i++) {
-		if (!hashes[i].isSuccessful) {
-			return false;
-		}
-
-		if (hashes[i].responseType === 'deficiencies') {
-			deficiencies = hashes[i].payload;
-		} else {
-			facilityHash = hashes[i].payload;
-		}
-	}
-	
-	return deficiencies.map((row: DeficiencyHash) => {
-		return Object.assign({}, row, facilityHash);
-	});
+export const mergeResponses = (deficiencies: Array<DeficiencyHash>, facility: FacilityHash) => {
+	return deficiencies.map((deficiency: DeficiencyHash) => Object.assign({}, deficiency, facility));
 };
 
-export const sendScrapers = (id: number) => Promise.all([scrapeFacilityDetails(id), scrapeDeficiencyDetails(id)]).then(mergeResults).catch(catchError);
-
-export default async (result: Array<OperationHash>, id: number) => {
-	const operationArray: any = await sendScrapers(id);
-	return operationArray ? result.concat(operationArray) : result;
+export default async (id: number) => {
+	const facilityResponse: FacilityResponse = await scrapeFacilityDetails(id).catch(handleError);
+	if (facilityResponse.isSuccessful) {
+		const deficiencyResponse: DeficiencyResponse = await scrapeDeficiencyDetails(id);
+		return deficiencyResponse.isSuccessful ? mergeResponses(deficiencyResponse.payload, facilityResponse.payload) : [];
+	} else {
+		return [];
+	}
 }

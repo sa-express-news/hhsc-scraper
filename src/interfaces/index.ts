@@ -37,6 +37,11 @@ export interface FacilityHash {
     num_deficiencies_cited: number;
 }
 
+export interface FacilityResponse {
+	isSuccessful: boolean;
+	payload?: FacilityHash;
+}
+
 // columns from the operation deficiencies page
 export interface DeficiencyHash {
 	activity_date: string;
@@ -50,5 +55,37 @@ export interface DeficiencyHash {
     narrative: string;
 }
 
+export interface DeficiencyResponse {
+	isSuccessful: boolean;
+	payload: Array<DeficiencyHash>;
+}
+
 // a row of operation data to be pushed to the DB. This is the ultimate output
 export interface OperationHash extends FacilityHash, DeficiencyHash {}
+
+// keyMap used for building a facilityHash
+export interface FacilityHashMapUtils {
+	sel: string;
+	func: Function;
+}
+
+export interface FacilityHashMap {
+	operation_id: FacilityHashMapUtils;
+	operation_number: FacilityHashMapUtils;
+    operation_type: FacilityHashMapUtils;
+    operation_name: FacilityHashMapUtils;
+    location_address: FacilityHashMapUtils;
+    phone: FacilityHashMapUtils;
+    county: FacilityHashMapUtils;
+    website: FacilityHashMapUtils;
+    email: FacilityHashMapUtils;
+    programs_provided: FacilityHashMapUtils;
+    type_of_issuance: FacilityHashMapUtils;
+    issuance_date: FacilityHashMapUtils;
+    open_foster_homes: FacilityHashMapUtils;
+    open_branch_offices: FacilityHashMapUtils;
+    corrective_action: FacilityHashMapUtils;
+    adverse_action: FacilityHashMapUtils;
+    temporarily_closed: FacilityHashMapUtils;
+    num_deficiencies_cited: FacilityHashMapUtils;
+}

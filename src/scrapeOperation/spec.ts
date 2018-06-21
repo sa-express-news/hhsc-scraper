@@ -1,5 +1,5 @@
 import * as test from 'tape';
-import { mergeResults } from './index';
+import { mergeResponses } from './index';
 
 const deficiency = {
 	activity_date: 'this is a string',
@@ -64,24 +64,14 @@ const operation = {
     num_deficiencies_cited: 873652,
 };
 
-test('mergeResults: if both requests were successfull, array of decifiencies should be returned with facility hash merged into each', t => {
-	const deficiencyResponse = {
-		isSuccessful: true,
-		responseType: 'deficiencies',
-		payload: [
+test('mergeResponses: if both requests were successfull, array of decifiencies should be returned with facility hash merged into each', t => {
+	const deficiencyResponse = [
 			deficiency,
 			deficiency,
 			deficiency,
-		],
-	};
+	];
 
-	const facilityResponse = {
-		isSuccessful: true,
-		responseType: 'facility',
-		payload: facility,
-	};
-
-	let result = mergeResults([facilityResponse, deficiencyResponse]);
+	let result = mergeResponses(deficiencyResponse, facility);
 	let expected = [
 		operation,
 		operation,
@@ -89,25 +79,5 @@ test('mergeResults: if both requests were successfull, array of decifiencies sho
 	];
 
 	t.deepEqual(result, expected);
-	t.end();
-});
-
-test('mergeResults: if response was unsuccessful, return false', t => {
-	const deficiencyResponse = {
-		isSuccessful: true,
-		responseType: 'deficiencies',
-		payload: [],
-	};
-
-	const facilityResponse = {
-		isSuccessful: false,
-		responseType: 'facility',
-		payload: facility,
-	};
-
-	let result = mergeResults([facilityResponse, deficiencyResponse]);
-	let expected = false;
-
-	t.equal(result, expected);
 	t.end();
 });

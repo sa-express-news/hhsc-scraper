@@ -25,10 +25,13 @@ const handleError = (err: any) => {
 }
 
 const runScraper = async () => {
+	// if the bash script contained start and end numbers, pluck them
 	const parsedArguments: ParsedArguments = parseArguments(process.argv.slice(2));
 
 	if (parsedArguments.isSuccessful) {
+		// grab the range of IDs we're seeking to retrieve
 		const { start, finish }: IDRange = getIDRange(parsedArguments.payload, range);
+		// this is the meat and potatoes command
 		const operations: Array<OperationHash> = await batchAndManageRequests(_.range(start, finish), throttle).catch(handleError);
 		//console.log(operations);
 	} else {

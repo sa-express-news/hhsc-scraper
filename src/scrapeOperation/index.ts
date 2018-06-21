@@ -17,6 +17,7 @@ const handleError = (err: any) => {
 	return { isSuccessful: false };
 }
 
+// here we create an array with a value for each deficiency and we append the facility information to each of those values
 export const mergeResponses = (deficiencies: Array<DeficiencyHash>, facility: FacilityHash) => {
 	return deficiencies.map((deficiency: DeficiencyHash) => Object.assign({}, deficiency, facility));
 };

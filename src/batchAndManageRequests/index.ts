@@ -15,6 +15,7 @@ const handleError = (err: any) => {
 	return [];
 };
 
+// For each ID, got out get the deficiencies and facility, then filter out the bad responses and flatten
 export const updateCurrent = (range: Array<number>, pointer: number, throttle: number) => {
 	return Promise.all(getOperations(range, pointer, throttle)).then((batch: Array<Array<OperationHash>>) => batch.filter(removeEmpties)).then(flattenArray);
 };
@@ -23,6 +24,7 @@ export default async (range: Array<number>, throttle: number) => {
 	let pointer: number = 0;
 	let current: Array<OperationHash>;
 	let result: Array<OperationHash> = [];
+	// the while loop is used to batch requests to the HHSC server
 	while (pointer < range.length) {
 		current = await updateCurrent(range, pointer, throttle).catch(handleError);
 		result = result.concat(current);

@@ -2,8 +2,10 @@ import requestFacilityDetailsPage from '../requestFacilityDetailsPage';
 
 import { FacilityResponse, FacilityHash, FacilityHashMap } from '../interfaces';
 
+// returned when there's nothing cooking
 const failedScrape = () => ({ isSuccessful: false });
 
+// All of these should be overwritten
 const defaultPayload = () => ({
 	operation_id: null,
 	operation_number: 'None',
@@ -33,14 +35,18 @@ export const isGRO = (operationType: string) => {
 	return operationType === 'General Residential Operation';
 };
 
+// this is the test to decide if we should be scraping this facility
 export const isTargetFacility = (operationType: string, numDeficiencies: number) => {
 	return (isCPA(operationType) || isGRO(operationType)) && Number.isInteger(numDeficiencies) && numDeficiencies > 0;
 };
 
+// used to pluck the reference text before the value we'll need. Targeted text is in the keyMap
 export const getKey = ($: CheerioSelector, sel: string, parent: string) => $(sel, parent);
 
+// once we have the key, we saddle over to grab the value
 export const getValue = ($key: Cheerio) => $key.parent().next().children('font').text().trim();
 
+// Handle converting a string value to boolean or null.
 export const getBoolean = ($: CheerioSelector, sel: string) => {
 	const $key: Cheerio = getKey($, sel, 'td');
 	const val: string = getValue($key);
@@ -51,34 +57,42 @@ export const getBoolean = ($: CheerioSelector, sel: string) => {
 	}
 };
 
+// handle parsing a string value
 export const getString = ($: CheerioSelector, sel: string) => {
 	const $key: Cheerio = getKey($, sel, 'td');
 	const val: string = getValue($key);
 	return typeof val === 'string' && val.length > 0 ? val : 'None';
 };
 
+// handle converting a string value to a number
 export const getNumber = ($: CheerioSelector, sel: string) => {
 	const $key: Cheerio = getKey($, sel, 'td');
 	const val: number = parseInt(getValue($key), 10);
 	return Number.isInteger(val) ? val : null;
 };
 
+// if we know there's no GRO value in a column, just return 0 for that type
 export const getCPANumber = (operationType: string, $: CheerioSelector, sel: string) => isCPA(operationType) ? getNumber($, sel) : 0;
 
+// CPAs don't have this column on their facility pages so we handle the differently
 export const getPrograms = (operationType: string, $: CheerioSelector, sel: string) => isCPA(operationType) ? 'Child Placing Agency' : getString($, sel);
 
+// this function calls getString then removes all the extraneous spaces and line breaks
 export const getAddress = ($: CheerioSelector, sel: string) => getString($, sel).replace(/\s\s+/g, ' ');
 
+// This value isn't in the HTML table, we target the surrounding link tag to pluck it
 export const getNumDeficiencies = (id: number, $: CheerioSelector) => {
 	const href = `/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`
 	return parseInt($(`a[href="${href}"]`).html(), 10);
 };
 
+// not only is this a needed value, but we grab it early to test if this is a needed facility
 export const getOperationType = ($: CheerioSelector) => {
 	const $key = getKey($, 'font:contains("Operation Type:")', 'td');
 	return $key.length !== 1 ? 'Unknown' : getValue($key);
 }
 
+// includes a key/value for each needed hash property. The values indicate which functions to use to retrieve our data
 export const getKeysMap = (operationID: number, operationType: string, numDeficencies: number) => ({
 	'operation_id': { sel: 'None', func: () => operationID },
 	'operation_number': { sel: 'font:contains("Operation Number:")', func: getString },
@@ -100,6 +114,7 @@ export const getKeysMap = (operationID: number, operationType: string, numDefice
 	'num_deficiencies_cited': { sel: 'None', func: () => numDeficencies },
 });
 
+// iterates over the keyMap and plucks the values
 export const buildFacilityHash = (keysMap: FacilityHashMap, $: CheerioSelector) => {
 	const result: FacilityHash = defaultPayload();
 	for (let key in keysMap) {

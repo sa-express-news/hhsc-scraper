@@ -87,15 +87,18 @@ export const getIncident = async elementHandle => {
 	return pluckValues(cells, elementHandle);
 };
 
+export const findDeadButton = page => {
+	const deadButtons = page.$$eval('b.dxp-button.dxp-bi.dxp-disabledButton', nodes => nodes.map(node => node.innerHTML.trim()));
+	const deadNextButton = deadButtons.filter(btn => btn.indexOf('<img src="../../App_Themes/Office2003%20Blue/Web/pNextDisabled.png" alt="Next">') !== 0);
+	return deadNextButton.length === 1;
+};
+
 export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page) => {
 	const rows = await getDeficenciesRow(page);
 	const incidents = await Promise.all(rows.map(getIncident)).catch(handleError);
 	payload = payload.concat(incidents);
 
-	// grab rows from page
-	// iterate over rows and grab inner elements from each
-	// grab value from each inner element and return one hash per row
-	// push the results to payload and flatten
+	const isDeadButton = await findDeadButton(page);
 	// afterwards, click the button and wait to see if another row loads
 	// if row has loaded, restart the process
 	// when button finally fails to return results, return payload

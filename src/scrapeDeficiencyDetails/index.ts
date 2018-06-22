@@ -93,12 +93,20 @@ export const findDeadButton = page => {
 	return deadNextButton.length === 1;
 };
 
+export const getNextPage = page => {}
+
 export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page) => {
 	const rows = await getDeficenciesRow(page);
 	const incidents = await Promise.all(rows.map(getIncident)).catch(handleError);
 	payload = payload.concat(incidents);
 
 	const isDeadButton = await findDeadButton(page);
+	if (!isDeadButton) {
+		await getNextPage(page);
+		return scrapeRowsFromTable(payload, page);
+	} else {
+		return payload;
+	}
 	// afterwards, click the button and wait to see if another row loads
 	// if row has loaded, restart the process
 	// when button finally fails to return results, return payload

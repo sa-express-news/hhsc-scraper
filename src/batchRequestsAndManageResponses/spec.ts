@@ -45,7 +45,7 @@ const filteredResponse = [
 ];
 
 test('removeEmpties: Function should filter out empty arrays from nested arrays in array of arrays', t => {
-    let result = operationResponse.filter(removeEmpties);
+    let result = removeEmpties(operationResponse);
     let expected = filteredResponse;
     t.deepEqual(result, expected);
     t.end();

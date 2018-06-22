@@ -11,7 +11,7 @@ import {
 // modules
 import parseArguments 			from './parseArguments';
 import getIDRange 				from './getIDRange';
-import batchAndManageRequests	from './batchAndManageRequests';
+import batchRequestsAndManageResponses	from './batchRequestsAndManageResponses';
 
 // Number of IDs to try and pluck with each scrape
 const range: number = 1;
@@ -32,7 +32,7 @@ const runScraper = async () => {
 		// grab the range of IDs we're seeking to retrieve
 		const { start, finish }: IDRange = getIDRange(parsedArguments.payload, range);
 		// this is the meat and potatoes command
-		const operations: Array<OperationHash> = await batchAndManageRequests(_.range(start, finish), throttle).catch(handleError);
+		const operations: Array<OperationHash> = await batchRequestsAndManageResponses(_.range(start, finish), throttle).catch(handleError);
 		//console.log(operations);
 	} else {
 		console.error('One or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');

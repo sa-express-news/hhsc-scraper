@@ -6,8 +6,9 @@ import scrapeOperation	from '../scrapeOperation';
 
 export const flattenArray = (batch: Array<Array<OperationHash>>) => ([] as Array<OperationHash>).concat(...batch);
 
-export const removeEmpties = (operations: Array<OperationHash>) => operations.length > 0;
+export const removeEmpties = (batch: Array<Array<OperationHash>>) => batch.filter((operations: Array<OperationHash>) => operations.length > 0);
 
+// creates and array the length of the batch throttle where each value is an ID that gets passed to scrapeOperations
 export const getOperations = (range: Array<number>, pointer: number, throttle: number) => range.slice(pointer, pointer + throttle).map(scrapeOperation);
 
 const handleError = (err: any) => {
@@ -15,9 +16,9 @@ const handleError = (err: any) => {
 	return [];
 };
 
-// For each ID, got out get the deficiencies and facility, then filter out the bad responses and flatten
+// For each ID, go out get the deficiencies and facility, then filter out the bad responses and flatten
 export const updateCurrent = (range: Array<number>, pointer: number, throttle: number) => {
-	return Promise.all(getOperations(range, pointer, throttle)).then((batch: Array<Array<OperationHash>>) => batch.filter(removeEmpties)).then(flattenArray);
+	return Promise.all(getOperations(range, pointer, throttle)).then(removeEmpties).then(flattenArray);
 };
 
 export default async (range: Array<number>, throttle: number) => {

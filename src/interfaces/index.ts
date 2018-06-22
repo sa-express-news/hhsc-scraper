@@ -57,7 +57,7 @@ export interface DeficiencyHash {
 
 export interface DeficiencyResponse {
 	isSuccessful: boolean;
-	payload: Array<DeficiencyHash>;
+	payload?: Array<DeficiencyHash>;
 }
 
 // a row of operation data to be pushed to the DB. This is the ultimate output

@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 import * as _ from 'lodash';
+import * as puppeteer from 'puppeteer';
 
 // interfaces
 import { 
@@ -7,6 +8,7 @@ import {
 	IDRange,
 	OperationHash,
 } from './interfaces';
+import { Browser } from 'puppeteer';
 
 // modules
 import parseArguments 			from './parseArguments';
@@ -29,10 +31,12 @@ const runScraper = async () => {
 	const parsedArguments: ParsedArguments = parseArguments(process.argv.slice(2));
 
 	if (parsedArguments.isSuccessful) {
+		// Fire up a headless browser
+		const browser: Browser = await puppeteer.launch();
 		// grab the range of IDs we're seeking to retrieve
 		const { start, finish }: IDRange = getIDRange(parsedArguments.payload, range);
 		// this is the meat and potatoes command
-		const operations: Array<OperationHash> = await batchRequestsAndManageResponses(_.range(start, finish), throttle).catch(handleError);
+		const operations: Array<OperationHash> = await batchRequestsAndManageResponses(_.range(start, finish), throttle, browser).catch(handleError);
 		//console.log(operations);
 	} else {
 		console.error('One or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');

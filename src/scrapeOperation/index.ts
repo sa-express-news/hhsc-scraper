@@ -7,6 +7,7 @@ import {
 	DeficiencyHash,
 	DeficiencyResponse,
 } from '../interfaces';
+import { Browser } from 'puppeteer';
 
 // models
 import scrapeFacilityDetails 	from '../scrapeFacilityDetails';
@@ -22,10 +23,10 @@ export const mergeResponses = (deficiencies: Array<DeficiencyHash>, facility: Fa
 	return deficiencies.map((deficiency: DeficiencyHash) => Object.assign({}, deficiency, facility));
 };
 
-export default async (id: number) => {
+export default async (id: number, browser: Browser) => {
 	const facilityResponse: FacilityResponse = await scrapeFacilityDetails(id).catch(handleError);
 	if (facilityResponse.isSuccessful) {
-		const deficiencyResponse: DeficiencyResponse = await scrapeDeficiencyDetails(id);
+		const deficiencyResponse: DeficiencyResponse = await scrapeDeficiencyDetails(id, browser);
 		return deficiencyResponse.isSuccessful ? mergeResponses(deficiencyResponse.payload, facilityResponse.payload) : [];
 	} else {
 		return [];

@@ -1,16 +1,36 @@
-import * as puppeteer from 'puppeteer';
-
 // interfaces
-import { DeficiencyHash, DeficencyPopUpHash } from '../interfaces';
+import { DeficiencyHash, DeficencyPopUpHash } 	from '../interfaces';
+import { Browser, Page, ElementHandle } 		from 'puppeteer';
 
 // modules
-import scrapeNarrativePopups from	'../scrapeNarrativePopups';
-import { clickButtonOnPage } from '../handleClickEvents';
+import { 
+	getDeficencyPage,
+	getDeficenciesRow,
+	findDeadButton,
+	clickNextButton,
+	getCells,
+	clickElement, 
+	getNarrativeLink,
+	getTechnicalAssistanceGiven,
+	getNarrative,
+} 								from '../headlessBrowserUtils';
 
-const handleError = (err: any) => {
+const failedScrape = () => ({ isSuccessful: false, payload: [] });
+
+const handleError = (payload: Array<DeficiencyHash>, err: any) => {
 	console.error(err);
-	return null;
+	return payload;	
 }
+
+const handleNarrativeError = (err: any) => {
+	console.error(err);
+	return { narrative: 'Error retrieving' };
+}
+
+const handleTechAssistanceError = (err: any) => {
+	console.error(err);
+	return { technical_assistance_given: null };
+};
 
 const defaultPayload = () => ({
 	activity_date: 'None',
@@ -26,20 +46,6 @@ const defaultPayload = () => ({
 });
 
 export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;
-
-export const closeSubscriptionModal = async page => {
-	return await page.click('button.prefix-overlay-close.prefix-overlay-action-later').catch((err) => console.log('No modal'));
-};
-
-export const getDeficencyPage = async (id: number, browser: any) => {
-	const page = await browser.newPage();
-	await page.goto(getURL(id)).catch(handleError);
-	// We need to handle the modal that pops up on page load
-	await closeSubscriptionModal(page);
-	return page;
-};
-
-export const getDeficenciesRow = page => page ? page.$$('#ctl00_contentBase_tabSections_C1 .dxgvDataRow_Glass') : [];
 
 export const getString = (cells, elementHandle, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
 
@@ -99,72 +105,64 @@ export const pluckValues = (cells, popupContent: DeficencyPopUpHash, elementHand
 	return result;
 };
 
-export const getIncident = (page, id: number) => async elementHandle => {
-	const cells 		= await elementHandle.$$eval('.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
-	const popupContent 	= await scrapeNarrativePopups(elementHandle, page, getURL(id));
-	return pluckValues(cells, popupContent, elementHandle);
+export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, url: string) => {
+	const el 				= await getNarrativeLink(element);
+	const isClickSuccessful = await clickElement(el, page, url);
+
+	if (isClickSuccessful) {
+		const technicalAssistanceGiven 	= await getTechnicalAssistanceGiven(page).catch(handleTechAssistanceError);
+		const narrative 				= await getNarrative(page).catch(handleNarrativeError);
+		return Object.assign({}, technicalAssistanceGiven, narrative);
+	} else {
+		return Object.assign({}, handleTechAssistanceError('Tech assist click failed!'), handleNarrativeError('Narrative click failed!'));
+	}
 };
 
-export const findDeadButton = async page => {
-	const deadButtons = await page.$$eval('b.dxp-button.dxp-bi.dxp-disabledButton', nodes => nodes.map(node => node.innerHTML.trim())).catch(() => []);
-	const deadNextButton = deadButtons.filter(btn => btn.indexOf('<img src="../../App_Themes/Office2003%20Blue/Web/pNextDisabled.png" alt="Next">') !== -1);
-	return deadNextButton.length === 1;
+export const getIncident = async (element: ElementHandle, page: Page, url: string) => {
+	const cells 		= await getCells(element);
+	const popupContent 	= await scrapeNarrativePopups(element, page, url);
+	return pluckValues(cells, popupContent, element);
 };
 
-export const clickNextButton = async (page, id: number) => {
-	const onClickSel = 'ASPx.GVPagerOnClick(\'ctl00_contentBase_tabSections_gridSummary\',\'PBN\');'
-	const fullSel = `a.dxp-button.dxp-bi[onclick="${onClickSel}"]`;
-	return clickButtonOnPage(page, fullSel, getURL(id));
+export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url: string) => {
+	const incidents: Array<DeficiencyHash> = [];
+	let incident: DeficiencyHash;
+
+	for (let i = 0; i < rows.length; i++) {
+		incident = await getIncident(rows[i], page, url)
+		incidents.push(incident);
+	}
+
+	return incidents;
 };
 
-export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page, id: number) => {
-	const rows = await getDeficenciesRow(page);
-	const incidents: Array<DeficiencyHash> = await Promise.all(rows.map(getIncident(page, id))).catch(handleError);
+export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string) => {
+	const rows: Array<ElementHandle> = await getDeficenciesRow(page);
+
+	const incidents: Array<DeficiencyHash> = await getIncidentRow(rows, page, url).catch((err) => err);
+	if (!incidents) return handleError(payload, incidents);
+
 	payload = payload.concat(incidents);
 
-	const isDeadButton = await findDeadButton(page);
+	const isDeadButton: boolean = await findDeadButton(page);
 	if (!isDeadButton) {
-		const isClickSuccessful = await clickNextButton(page, id);
+		const isClickSuccessful = await clickNextButton(page, url);
 		if (!isClickSuccessful) return payload;
-		return await scrapeRowsFromTable(payload, page, id).catch(handleError);
+		return await scrapeRowsFromTable(payload, page, url).catch((err) => handleError(payload, err));
 	} else {
 		return payload;
 	}
 };
 
-export default async (id: number) => {
-	const browser 		= await puppeteer.launch();
-	const page 			= await getDeficencyPage(id, browser);
+export default async (id: number, browser: Browser) => {
+	const page: Page = await getDeficencyPage(getURL(id), browser);
+	if (!page) return failedScrape();
+	
+	const payload: Array<DeficiencyHash> = await scrapeRowsFromTable([], page, getURL(id)).catch((err) => handleError([], err));
 
-	const payload: Promise<Array<DeficiencyHash>> = await scrapeRowsFromTable([], page, id).catch(handleError);
-
+	await page.close();
 	return {
-		payload: [
-			{
-				activity_date: 'this is a string',
-			    activity_id: 999,
-			    standard_number_description: 'this is a string',
-			    activity_type: 'this is a string',
-			    standard_risk_level: 'this is a string',
-			    corrected_at_inspection: true,
-			    corrected_date: 'this is a string',
-			    date_correction_verified: 'this is a string',
-			    technical_assistance_given: null,
-			    narrative: 'this is a string',
-			},
-			{
-				activity_date: 'this is a string',
-			    activity_id: 999,
-			    standard_number_description: 'this is a string',
-			    activity_type: 'this is a string',
-			    standard_risk_level: 'this is a string',
-			    corrected_at_inspection: true,
-			    corrected_date: 'this is a string',
-			    date_correction_verified: 'this is a string',
-			    technical_assistance_given: null,
-			    narrative: 'this is a string',
-			},
-		],
+		payload,
 		isSuccessful: true,
 	};
 }

@@ -1,42 +1,35 @@
-let timeoutArr = [];
-let listenerArr = [];
-
-let idx = 0;
-
 const handleError = (err: any) => {
 	console.error(err);
 	return null;
 }
 
 // timeout is called if listener hangs for 30+ seconds
-const getTimeout = (resolve, idx) => setTimeout(() => {
-  	clearTimeout(timeoutArr[idx]);
+const getTimeout = resolve => setTimeout(() => {
   	console.error('No intercepted response for 30 seconds after button click');
   	resolve(false);
 }, 30000);
 
-export const resolveButtonClick = (idx: number, resolve, url: string, page, res) => {
-	if (res.url() === url) {
-		clearTimeout(timeoutArr[idx]);
-		page.removeListener('response', listenerArr[idx]);
-		resolve(true);
-	}
-};
+const clickSomething = (page, url: string, clicker: Function) => new Promise((resolve, reject) => {
+	let listener;
+	let timeout;
 
-export const clickSomething = async (page, url: string, clickCB: Function) => {
-	return new Promise(async (resolve, reject) => {
-		timeoutArr[idx] = getTimeout(resolve, idx);
-		listenerArr[idx] = resolveButtonClick.bind(null, idx, resolve, url, page)
-		page.on('response', listenerArr[idx]);
-		await clickCB();
-		idx++;
-	}).catch(handleError);
-};
+	timeout = getTimeout(resolve);
+	listener = res => {
+		if (res.url() === url) {
+			clearTimeout(timeout);
+			page.removeListener('response', listener);
+			resolve(true);
+		}
+	};
+
+	page.on('response', listener);
+	clicker();
+});
 
 export const clickButtonOnPage = async (page, sel, url: string) => {
-	return await clickSomething(page, url, async () => await page.click(sel));
+	return clickSomething(page, url, () => page.click(sel)).catch(handleError);
 };
 
 export const clickElement = async (el, page, url:string) => {
-	return await clickSomething(page, url, async () => await el.click());
+	return clickSomething(page, url, () => el.click()).catch(handleError);
 };

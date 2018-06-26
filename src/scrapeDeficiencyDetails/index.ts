@@ -5,7 +5,7 @@ import { DeficiencyHash, DeficencyPopUpHash } from '../interfaces';
 
 // modules
 import scrapeNarrativePopups from	'../scrapeNarrativePopups';
-import { clickButtonOnPage, resolveButtonClick } from '../handleClickEvents';
+import { clickButtonOnPage } from '../handleClickEvents';
 
 const handleError = (err: any) => {
 	console.error(err);
@@ -99,7 +99,7 @@ export const pluckValues = (cells, popupContent: DeficencyPopUpHash, elementHand
 	return result;
 };
 
-export const getIncident = async (page, id: number, elementHandle) => {
+export const getIncident = (page, id: number) => async elementHandle => {
 	const cells 		= await elementHandle.$$eval('.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
 	const popupContent 	= await scrapeNarrativePopups(elementHandle, page, getURL(id));
 	return pluckValues(cells, popupContent, elementHandle);
@@ -119,7 +119,7 @@ export const clickNextButton = async (page, id: number) => {
 
 export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page, id: number) => {
 	const rows = await getDeficenciesRow(page);
-	const incidents: Array<DeficiencyHash> = await Promise.all(rows.map(getIncident.bind(null, page, id))).catch(handleError);
+	const incidents: Array<DeficiencyHash> = await Promise.all(rows.map(getIncident(page, id))).catch(handleError);
 	payload = payload.concat(incidents);
 
 	const isDeadButton = await findDeadButton(page);

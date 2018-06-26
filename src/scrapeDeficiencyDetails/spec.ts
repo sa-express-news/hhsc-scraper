@@ -30,7 +30,9 @@ const runTests = async () => {
 		const page = await getDeficencyPage(1252288, browser);
 		const rows = await getDeficenciesRow(page);
 
-		let result = await getIncident(page, 1252288, rows[0]);
+		const incidentGetter = getIncident(page, 1252288);
+
+		let result = await incidentGetter(rows[0]);
 		let expected = {
 			activity_date: '6/15/2018',
 			activity_id: null,
@@ -55,7 +57,9 @@ const runTests = async () => {
 		await clickNextButton(page, 141349);
 		const rows = await getDeficenciesRow(page);
 
-		let result = await getIncident(page, 141349, rows[0]);
+		const incidentGetter = getIncident(page, 141349);
+
+		let result = await incidentGetter(rows[0]);
 		let expected = {
 			activity_date: '7/10/2017',
 			activity_id: null,

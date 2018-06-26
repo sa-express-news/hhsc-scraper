@@ -24,8 +24,9 @@ export const getNarrative = async page => {
 };
 
 export default async (elementHandle, page, url: string) => {
-	const el 				= await elementHandle.$('.dxgv a').catch(handleError);
-	const isClickSuccessful = await clickElement(el, page, url).catch(handleError);
+	const el 				= await elementHandle.$('.dxgv a');
+	console.log('ping')
+	const isClickSuccessful = await clickElement(el, page, url);
 
 	if (isClickSuccessful) {
 		const technicalAssistanceGiven 	= await getTechnicalAssistanceGiven(page).catch(handleError);

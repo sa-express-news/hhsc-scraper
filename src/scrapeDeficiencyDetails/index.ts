@@ -49,7 +49,7 @@ export const getTechnicalAssistanceGiven = async page => {
 };
 
 export const getNarrative = async page => {
-	const narrative = await page.$eval('textarea.dxeMemoEditArea_Glass dxeMemoEditAreaSys', nodes => nodes.map(node => node.innerHTML.trim()));
+	const narrative = await page.$eval('textarea.dxeMemoEditArea_Glass.dxeMemoEditAreaSys', nodes => node => node.innerHTML.trim());
 	return { narrative };
 };
 

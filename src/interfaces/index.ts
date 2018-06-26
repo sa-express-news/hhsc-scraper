@@ -42,8 +42,14 @@ export interface FacilityResponse {
 	payload?: FacilityHash;
 }
 
+// columns plucked from the popup on the deficency page
+export interface DeficencyPopUpHash {
+    technical_assistance_given: boolean;
+    narrative: string;
+}
+
 // columns from the operation deficiencies page
-export interface DeficiencyHash {
+export interface DeficiencyHash extends DeficencyPopUpHash {
 	activity_date: string;
     activity_id: number;
     standard_number_description: string;
@@ -52,7 +58,6 @@ export interface DeficiencyHash {
     corrected_at_inspection: boolean;
     corrected_date: string;
     date_correction_verified: string;
-    narrative: string;
 }
 
 export interface DeficiencyResponse {

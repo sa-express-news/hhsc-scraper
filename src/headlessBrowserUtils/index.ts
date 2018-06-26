@@ -39,10 +39,10 @@ export const clickButtonOnPage = async (page: Page, sel: string, url: string) =>
 };
 
 export const getCells = (el: ElementHandle) => {
-	return el.$$eval('.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
+	return el.$$eval('td.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
 };
 
-export const getNarrativeLink = (el: ElementHandle) => el.$('.dxgv a');
+export const getNarrativeLink = (el: ElementHandle) => el.$('td.dxgv a');
 
 export const clickElement = async (el: ElementHandle, page: Page, url:string) => {
 	return handleClickEvent(page, url, () => el.click()).catch(handleError);
@@ -64,4 +64,10 @@ export const getNarrative = async (page: Page) => {
 	const sel = 'textarea.dxeMemoEditArea_Glass.dxeMemoEditAreaSys';
 	const narrative = await page.$eval(sel, (node: HTMLTextAreaElement) => node.value.trim()).catch(handleError);
 	return { narrative };
+};
+
+export const getID = async (cells, cellsIdx: number, el: ElementHandle) => {
+	const onclick: string = await el.$eval('td.dxgv a', (a: HTMLLinkElement) => a.getAttribute('onclick'));
+	// extract the id from the arguments of the function
+	return parseInt(onclick.match(/\d+/)[0], 10);
 };

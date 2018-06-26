@@ -13,7 +13,8 @@ import {
 	getNarrativeLink,
 	getTechnicalAssistanceGiven,
 	getNarrative,
-} 								from '../headlessBrowserUtils';
+	getID,
+} from '../headlessBrowserUtils';
 
 const failedScrape = () => ({ isSuccessful: false, payload: [] });
 
@@ -47,15 +48,17 @@ const defaultPayload = () => ({
 
 export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;
 
-export const getString = (cells, elementHandle, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
+export const getString = (cells, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
 
-export const getBoolean = (cells, elementHandle, cellsIdx: number) => {
+export const getBoolean = (cells, cellsIdx: number) => {
 	if (typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0) {
 		return cells[cellsIdx] !== 'No';
 	} else {
 		return null;
 	}
 };
+
+
 
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	activity_date: {
@@ -86,6 +89,10 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 		func: getString,
 		cellsIdx: 6,
 	},
+	activity_id: {
+		func: getID,
+		cellsIdx: 7,
+	},
 	technical_assistance_given: {
 		func: () => popupContent.technical_assistance_given,
 	},
@@ -94,12 +101,12 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	},
 });
 
-export const pluckValues = (cells, popupContent: DeficencyPopUpHash, elementHandle) => {
+export const pluckValues = async (cells: Array<string | number>, popupContent: DeficencyPopUpHash, element: ElementHandle) => {
 	const result: DeficiencyHash = defaultPayload();
 	const valsMap = getValsMap(popupContent);
 	for (let key in valsMap) {
 		if (valsMap.hasOwnProperty(key)) {
-			result[key] = valsMap[key].func(cells, elementHandle, valsMap[key].cellsIdx);
+			result[key] = await valsMap[key].func(cells, valsMap[key].cellsIdx, element);
 		}
 	}
 	return result;
@@ -119,9 +126,9 @@ export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, 
 };
 
 export const getIncident = async (element: ElementHandle, page: Page, url: string) => {
-	const cells 		= await getCells(element);
-	const popupContent 	= await scrapeNarrativePopups(element, page, url);
-	return pluckValues(cells, popupContent, element);
+	const cells: Array<string | number> 	= await getCells(element);
+	const popupContent: DeficencyPopUpHash 	= await scrapeNarrativePopups(element, page, url);
+	return await pluckValues(cells, popupContent, element);
 };
 
 export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url: string) => {

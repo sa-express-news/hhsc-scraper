@@ -36,7 +36,7 @@ const runTests = async () => {
 		let result = await getIncident(rows[0], page, getURL(1252288));
 		let expected = {
 			activity_date: '6/15/2018',
-			activity_id: null,
+			activity_id: 1308184770,
 			standard_number_description: '748.1003(a) - Child/caregiver ratio-Caregiver may care for 5 children if any require tx svcs, 8 children if not; children under 5 yrs old count as 2 children',
 			activity_type: 'Assessments',
 			standard_risk_level: 'Medium High',
@@ -61,7 +61,7 @@ const runTests = async () => {
 		let result = await getIncident(rows[0], page, getURL(141349));
 		let expected = { 
 			activity_date: '7/10/2017',
-			activity_id: null,
+			activity_id: 1308054089,
 			standard_number_description: '748.1209(a) - Child Orientation-Provided to child who is 5 years old or older within 7 days of admission and geared to child\'s intellectual level',
 			activity_type: 'Monitoring Inspections',
 			standard_risk_level: 'Medium Low',
@@ -122,7 +122,7 @@ const runTests = async () => {
 		let resultFirstDeficency = deficiencies[0]
 		let expectedFirstDeficiency = {
 			activity_date: '5/29/2018',
-			activity_id: null,
+			activity_id: 1308185545,
 			standard_number_description: '748.3101(2) - Fire Inspection-Must have fire inspection at least once every 12 months from date of last fire inspection',
 			activity_type: 'Assessments',
 			standard_risk_level: 'Medium High',
@@ -137,7 +137,7 @@ const runTests = async () => {
 		let resultLastDeficency = deficiencies[deficiencies.length - 1];
 		let expectedLastDeficiency = {
 			activity_date: '5/29/2018',
-			activity_id: null, 
+			activity_id: 1308185545, 
 			standard_number_description: '748.3101(2) - Fire Inspection-Must have fire inspection at least once every 12 months from date of last fire inspection',
 			activity_type: 'Assessments',
 			standard_risk_level: 'Medium High',

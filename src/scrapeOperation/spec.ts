@@ -10,6 +10,7 @@ const deficiency = {
     corrected_at_inspection: true,
     corrected_date: 'this is a string',
     date_correction_verified: 'this is a string',
+    technical_assistance_given: null,
     narrative: 'this is a string',
 };
 
@@ -43,6 +44,7 @@ const operation = {
     corrected_at_inspection: true,
     corrected_date: 'this is a string',
     date_correction_verified: 'this is a string',
+    technical_assistance_given: null,
     narrative: 'this is a string',
     operation_id: 873652,
 	operation_number: 'facility string',

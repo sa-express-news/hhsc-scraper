@@ -4,7 +4,8 @@ import * as puppeteer from 'puppeteer';
 import { DeficiencyHash, DeficencyPopUpHash } from '../interfaces';
 
 // modules
-import { clickButton, resolveButtonClick } from '../handleClickEvents';
+import scrapeNarrativePopups from	'../scrapeNarrativePopups';
+import { clickButtonOnPage, resolveButtonClick } from '../handleClickEvents';
 
 const handleError = (err: any) => {
 	console.error(err);
@@ -40,32 +41,6 @@ export const getDeficencyPage = async (id: number, browser: any) => {
 
 export const getDeficenciesRow = page => page ? page.$$('#ctl00_contentBase_tabSections_C1 .dxgvDataRow_Glass') : [];
 
-export const getTechnicalAssistanceGiven = async page => {
-	const technical_assistance_given = await page.$eval('span#ctl00_contentBase_popupNarrative_ASPxLabel1', node => {
-		const html = node.innerHTML.trim();
-		return html.slice(html.indexOf(':') + 1);
-	});
-	return { technical_assistance_given };
-};
-
-export const getNarrative = async page => {
-	const narrative = await page.$eval('textarea.dxeMemoEditArea_Glass.dxeMemoEditAreaSys', nodes => node => node.innerHTML.trim());
-	return { narrative };
-};
-
-export const getPopUpHash = async (elementHandle, page, id: number) => {
-	const targetGroup 	= await elementHandle.$$('.dxgv');
-	const target		= targetGroup[7];
-	const isClickSuccessful = await clickButton(page, target, getURL(id));
-	if (isClickSuccessful) {
-		const technicalAssistanceGiven = await getTechnicalAssistanceGiven(page);
-		const narrative = await getNarrative(page);
-		return Object.assign({}, technicalAssistanceGiven, narrative);
-	} else {
-		return handlePopUpError('Click failed!');
-	}
-};
-
 export const getString = (cells, elementHandle, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
 
 export const getBoolean = (cells, elementHandle, cellsIdx: number) => {
@@ -76,7 +51,7 @@ export const getBoolean = (cells, elementHandle, cellsIdx: number) => {
 	}
 };
 
-export const getValsMap = () => ({
+export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	activity_date: {
 		func: getString,
 		cellsIdx: 0,
@@ -105,11 +80,17 @@ export const getValsMap = () => ({
 		func: getString,
 		cellsIdx: 6,
 	},
+	technical_assistance_given: {
+		func: () => popupContent.technical_assistance_given,
+	},
+	narrative: {
+		func: () => popupContent.narrative,
+	},
 });
 
-export const pluckValues = (cells, elementHandle) => {
+export const pluckValues = (cells, popupContent: DeficencyPopUpHash, elementHandle) => {
 	const result: DeficiencyHash = defaultPayload();
-	const valsMap = getValsMap();
+	const valsMap = getValsMap(popupContent);
 	for (let key in valsMap) {
 		if (valsMap.hasOwnProperty(key)) {
 			result[key] = valsMap[key].func(cells, elementHandle, valsMap[key].cellsIdx);
@@ -118,15 +99,10 @@ export const pluckValues = (cells, elementHandle) => {
 	return result;
 };
 
-const handlePopUpError = (err: any) => {
-	console.error(err);
-	return { technical_assistance_given: null, narrative: 'Error plucking!!!' };
-};
-
 export const getIncident = async (page, id: number, elementHandle) => {
-	const cells = await elementHandle.$$eval('.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
-	const popupContent = await getPopUpHash(elementHandle, page, id).catch(handlePopUpError);
-	return pluckValues(cells, elementHandle);
+	const cells 		= await elementHandle.$$eval('.dxgv', nodes => nodes.map(node => node.innerHTML.trim()));
+	const popupContent 	= await scrapeNarrativePopups(elementHandle, page, getURL(id));
+	return pluckValues(cells, popupContent, elementHandle);
 };
 
 export const findDeadButton = async page => {
@@ -138,12 +114,12 @@ export const findDeadButton = async page => {
 export const clickNextButton = async (page, id: number) => {
 	const onClickSel = 'ASPx.GVPagerOnClick(\'ctl00_contentBase_tabSections_gridSummary\',\'PBN\');'
 	const fullSel = `a.dxp-button.dxp-bi[onclick="${onClickSel}"]`;
-	return clickButton(page, fullSel, getURL(id));
+	return clickButtonOnPage(page, fullSel, getURL(id));
 };
 
 export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page, id: number) => {
 	const rows = await getDeficenciesRow(page);
-	const incidents: Array<DeficiencyHash> = await Promise.all(rows.map(getIncident).bind(null, page, id)).catch(handleError);
+	const incidents: Array<DeficiencyHash> = await Promise.all(rows.map(getIncident.bind(null, page, id))).catch(handleError);
 	payload = payload.concat(incidents);
 
 	const isDeadButton = await findDeadButton(page);
@@ -173,6 +149,7 @@ export default async (id: number) => {
 			    corrected_at_inspection: true,
 			    corrected_date: 'this is a string',
 			    date_correction_verified: 'this is a string',
+			    technical_assistance_given: null,
 			    narrative: 'this is a string',
 			},
 			{
@@ -184,6 +161,7 @@ export default async (id: number) => {
 			    corrected_at_inspection: true,
 			    corrected_date: 'this is a string',
 			    date_correction_verified: 'this is a string',
+			    technical_assistance_given: null,
 			    narrative: 'this is a string',
 			},
 		],

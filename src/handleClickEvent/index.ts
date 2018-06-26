@@ -27,6 +27,13 @@ class HandleClickEvent {
 		};
 	}
 
+	public handleError(err: any, reject: Function, page: Page) {
+		console.error(err);
+		clearTimeout(this.timeout);
+		page.removeListener('response', this.listener);
+		return reject(null);
+	}
+
 	public setPromise(page: Page, url: string, clicker: Function) {
 		return new Promise ((resolve: Function, reject: Function) => {
 			this.timeout = this.getTimeout(resolve, page);

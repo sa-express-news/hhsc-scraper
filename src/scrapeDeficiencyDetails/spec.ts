@@ -9,7 +9,7 @@ import scrapeDefiencyDetails, {
 import {
 	getDeficencyPage,
 	getDeficenciesRow,
-	findDeadButton,
+	isDeadButtonOrNoButton,
 	clickNextButton,
 } from '../headlessBrowserUtils';
 
@@ -77,19 +77,19 @@ const runTests = async () => {
 		t.end();
 	});
 
-	test('findDeadButton: When we reach the end of pagination, this should stop the process', async t => {
+	test('isDeadButtonOrNoButton: When we reach the end of pagination, this should stop the process', async t => {
 		const page = await getDeficencyPage(getURL(95732), browser);
 		let successfulClicks = 0;
 		let isSuccessfulClick = false;
 
-		let isButtonDead = await findDeadButton(page);
+		let isButtonDead = await isDeadButtonOrNoButton(page);
 
 		while (!isButtonDead) {
 			isSuccessfulClick = await clickNextButton(page, getURL(95732));
 			if (!isSuccessfulClick) break;
 			successfulClicks++;
 			console.log(`${successfulClicks} successful clicks`);
-			isButtonDead = await findDeadButton(page);
+			isButtonDead = await isDeadButtonOrNoButton(page);
 		}
 
 		let result = successfulClicks;
@@ -154,7 +154,7 @@ const runTests = async () => {
 		t.equal(resultLen, expectedLen);
 
 		t.end();
-		process.exit(0)
+		process.exit(0);
 	});
 }
 runTests();

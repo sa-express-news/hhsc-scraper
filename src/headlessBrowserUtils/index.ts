@@ -12,9 +12,27 @@ const closeSubscriptionModal = async (page: Page) => {
 	return await page.click('button.prefix-overlay-close.prefix-overlay-action-later').catch((err) => console.log('No modal'));
 };
 
-export const getDeficencyPage = async (url: string, browser: Browser) => {
+const getPage = async (url: string, browser: Browser) => {
 	const page: Page = await browser.newPage();
 	await page.goto(url).catch(handleError);
+	return page;
+};
+
+const isAlertPage = async (page: Page) => {
+	const alert = await page.$('div.alert.alert-info').catch(handleError);
+	return alert !== null;
+};
+
+export const getDeficencyPage = async (url: string, browser: Browser) => {
+	let page: Page = await getPage(url, browser);
+	// this whole saga helps us beat the login blocker page the HHSC attempts to throw
+	let hitAlertPage = await isAlertPage(page);
+	while (hitAlertPage) {
+		console.log('Hit alert page!');
+		await page.close();
+		page = await getPage(url, browser);
+		hitAlertPage = await isAlertPage(page);
+	}
 	// We need to handle the modal that pops up on page load
 	await closeSubscriptionModal(page);
 	return page;
@@ -22,20 +40,24 @@ export const getDeficencyPage = async (url: string, browser: Browser) => {
 
 export const getDeficenciesRow = (page: Page) => page ? page.$$('#ctl00_contentBase_tabSections_C1 .dxgvDataRow_Glass') : [];
 
-export const findDeadButton = async (page: Page) => {
-	const deadButtons: any = await page.$$eval('b.dxp-button.dxp-bi.dxp-disabledButton', nodes => nodes.map(node => node.innerHTML.trim())).catch(() => []);
-	const deadNextButton = deadButtons.filter(btn => btn.indexOf('<img src="../../App_Themes/Office2003%20Blue/Web/pNextDisabled.png" alt="Next">') !== -1);
-	return deadNextButton.length === 1;
+export const isNextButton = async (page: Page) => {
+	const onClickSel 	= 'ASPx.GVPagerOnClick(\'ctl00_contentBase_tabSections_gridSummary\',\'PBN\');'
+	const fullSel 		= `a.dxp-button.dxp-bi[onclick="${onClickSel}"]`;
+	const nextButton: any = await page.$(fullSel).catch(handleError);
+	return nextButton !== null;
 };
 
 export const clickNextButton = async (page: Page, url: string) => {
 	const onClickSel 	= 'ASPx.GVPagerOnClick(\'ctl00_contentBase_tabSections_gridSummary\',\'PBN\');'
 	const fullSel 		= `a.dxp-button.dxp-bi[onclick="${onClickSel}"]`;
-	return clickButtonOnPage(page, fullSel, url);
+	return await clickButtonOnPage(page, fullSel, url).catch(handleError);
 };
 
 export const clickButtonOnPage = async (page: Page, sel: string, url: string) => {
-	return handleClickEvent(page, url, () => page.click(sel)).catch(handleError);
+	console.log('attempting nav click');
+	const res = await handleClickEvent(page, url, async () => await page.click(sel).catch(handleError));
+	console.log('successful nav click');
+	return res;
 };
 
 export const getCells = (el: ElementHandle) => {
@@ -45,7 +67,10 @@ export const getCells = (el: ElementHandle) => {
 export const getNarrativeLink = (el: ElementHandle) => el.$('td.dxgv a');
 
 export const clickElement = async (el: ElementHandle, page: Page, url:string) => {
-	return handleClickEvent(page, url, () => el.click()).catch(handleError);
+	console.log('attempting element click');
+	const res = await handleClickEvent(page, url, async () => await el.click().catch(handleError));
+	console.log('successful element click');
+	return res;
 };
 
 export const sliceTechAssistanceString = node => {
@@ -58,6 +83,10 @@ export const getTechnicalAssistanceGiven = async (page: Page) => {
 	const value = await page.$eval(sel, sliceTechAssistanceString).catch(handleError);
 	const technical_assistance_given = value === 'Yes';
 	return { technical_assistance_given };
+};
+
+export const closeNarrativeBox = async (page: Page) => {
+	return await page.click('div.dxpcLite_Glass.dxpclW div.dxpc-closeBtn a').catch(handleError)
 };
 
 export const getNarrative = async (page: Page) => {

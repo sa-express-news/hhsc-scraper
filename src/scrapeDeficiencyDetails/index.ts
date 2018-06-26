@@ -1,17 +1,18 @@
 // interfaces
 import { DeficiencyHash, DeficencyPopUpHash } 	from '../interfaces';
-import { Browser, Page, ElementHandle } 		from 'puppeteer';
+import { Browser, Page, ElementHandle, Dialog } 		from 'puppeteer';
 
 // modules
 import { 
 	getDeficencyPage,
 	getDeficenciesRow,
-	findDeadButton,
+	isNextButton,
 	clickNextButton,
 	getCells,
 	clickElement, 
 	getNarrativeLink,
 	getTechnicalAssistanceGiven,
+	closeNarrativeBox,
 	getNarrative,
 	getID,
 } from '../headlessBrowserUtils';
@@ -57,8 +58,6 @@ export const getBoolean = (cells, cellsIdx: number) => {
 		return null;
 	}
 };
-
-
 
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	activity_date: {
@@ -119,6 +118,8 @@ export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, 
 	if (isClickSuccessful) {
 		const technicalAssistanceGiven 	= await getTechnicalAssistanceGiven(page).catch(handleTechAssistanceError);
 		const narrative 				= await getNarrative(page).catch(handleNarrativeError);
+		await closeNarrativeBox(page);
+		console.log('narrative box closed');
 		return Object.assign({}, technicalAssistanceGiven, narrative);
 	} else {
 		return Object.assign({}, handleTechAssistanceError('Tech assist click failed!'), handleNarrativeError('Narrative click failed!'));
@@ -143,30 +144,48 @@ export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url
 	return incidents;
 };
 
-export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string) => {
-	const rows: Array<ElementHandle> = await getDeficenciesRow(page);
-
+export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string, rows: Array<ElementHandle>) => {
 	const incidents: Array<DeficiencyHash> = await getIncidentRow(rows, page, url).catch((err) => err);
 	if (!incidents) return handleError(payload, incidents);
 
 	payload = payload.concat(incidents);
 
-	const isDeadButton: boolean = await findDeadButton(page);
-	if (!isDeadButton) {
+	const nextButton: boolean = await isNextButton(page);
+	if (nextButton) {
 		const isClickSuccessful = await clickNextButton(page, url);
 		if (!isClickSuccessful) return payload;
-		return await scrapeRowsFromTable(payload, page, url).catch((err) => handleError(payload, err));
+
+		const nextRows: Array<ElementHandle> = await getDeficenciesRow(page);
+		if (nextRows.length === 0) return payload;
+
+		return await scrapeRowsFromTable(payload, page, url, nextRows).catch((err) => handleError(payload, err));
 	} else {
 		return payload;
 	}
 };
 
+const getDialogListener = () => async (dialog: Dialog) => {
+	console.log(dialog.message());
+	await dialog.dismiss();
+};
+
+const turnOnDialogListener = (page: Page, dialogListener) => page.on('dialog', dialogListener);
+
+const turnOffDialogListener = (page: Page, dialogListner) => page.removeListener('dialog', dialogListner);
+
 export default async (id: number, browser: Browser) => {
 	const page: Page = await getDeficencyPage(getURL(id), browser);
 	if (!page) return failedScrape();
-	
-	const payload: Array<DeficiencyHash> = await scrapeRowsFromTable([], page, getURL(id)).catch((err) => handleError([], err));
 
+	const dialogListener = getDialogListener();
+	turnOnDialogListener(page, dialogListener);
+
+	const rows: Array<ElementHandle> = await getDeficenciesRow(page);
+	if (rows.length === 0) return failedScrape();
+
+	const payload: Array<DeficiencyHash> = await scrapeRowsFromTable([], page, getURL(id), rows).catch((err) => handleError([], err));
+
+	turnOffDialogListener(page, dialogListener);
 	await page.close();
 	return {
 		payload,

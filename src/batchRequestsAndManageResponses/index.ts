@@ -28,7 +28,9 @@ export default async (range: Array<number>, throttle: number, browser: Browser) 
 	let result: Array<OperationHash> = [];
 	// the while loop is used to batch requests to the HHSC server
 	while (pointer < range.length) {
+		console.log('trying ' + range[pointer]);
 		current = await updateCurrent(range, pointer, throttle, browser).catch(handleError);
+		console.log('Finished ' + range[pointer] + ' with ' + current.length + ' responses');
 		result = result.concat(current);
 		pointer += throttle;
 	}

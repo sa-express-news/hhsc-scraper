@@ -9,14 +9,15 @@ import {
 	IDRange,
 	OperationHash,
 	ScrapeResult,
-} from './interfaces';
-import { Browser } from 'puppeteer';
+} 					from './interfaces';
+import { Browser } 	from 'puppeteer';
 
 // modules
 import parseArguments 					from './parseArguments';
 import pullFromServer					from './pullFromServer';
 import getIDRange 						from './getIDRange';
 import batchRequestsAndManageResponses	from './batchRequestsAndManageResponses';
+import pushToServer						from './pushToServer';
 
 // Number of IDs to try and pluck with each scrape
 const defaultScope: number = 1000;
@@ -43,11 +44,10 @@ const runScraper = async () => {
 		const browser: Browser = await puppeteer.launch();
 		// grab the range of IDs we're seeking to retrieve and the batch retrieval rate
 		const { range, throttle }: IDRange = getIDRange(parsedArguments.payload, prevAttemptedIDs, defaultScope, defaultThrottle);
-		// In case this whole thing goes up in flames
-		const existingDataBackup: Array<OperationHash> = existingData;
 		// this is the meat and potatoes command
 		const { operations, attemptedIDs }: ScrapeResult = await batchRequestsAndManageResponses(range, throttle, browser, prevAttemptedIDs).catch((err: any) => handleError(err, prevAttemptedIDs));
-		//console.log(operations);
+		// push the new data, the backup data and the attemptedIDs to the server
+		await pushToServer(operations, existingData, attemptedIDs)
 	} else {
 		console.error('Pull from API failed or one or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');
 	}

@@ -4,6 +4,10 @@
 #production
 /build
 
+#returned data
+/results
+/logs
+
 #npm error log
 npm-debug.log*
 

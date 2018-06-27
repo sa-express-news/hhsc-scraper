@@ -9,7 +9,7 @@ import scrapeDefiencyDetails, {
 import {
 	getDeficencyPage,
 	getDeficenciesRow,
-	isDeadButtonOrNoButton,
+	isNextButton,
 	clickNextButton,
 } from '../headlessBrowserUtils';
 
@@ -32,21 +32,11 @@ const runTests = async () => {
 	test('getIncident: should return a DeficiencyHash with scraped values', async t => {
 		const page = await getDeficencyPage(getURL(1252288), browser);
 		const rows = await getDeficenciesRow(page);
+		const incident = await getIncident(rows[0], page, getURL(1252288));
 
-		let result = await getIncident(rows[0], page, getURL(1252288));
-		let expected = {
-			activity_date: '6/15/2018',
-			activity_id: 1308184770,
-			standard_number_description: '748.1003(a) - Child/caregiver ratio-Caregiver may care for 5 children if any require tx svcs, 8 children if not; children under 5 yrs old count as 2 children',
-			activity_type: 'Assessments',
-			standard_risk_level: 'Medium High',
-			corrected_at_inspection: false,
-			corrected_date: '6/18/2018',
-			date_correction_verified: '6/18/2018',
-			technical_assistance_given: false,
-			narrative: 'On 6/9/2018 the operation was out of ratio in three cottages. Staff were in training and not in the cottages.'
-		};
-		t.deepEqual(result, expected);
+		let result = incident.narrative;
+		let expected = 'On 6/9/2018 the operation was out of ratio in three cottages. Staff were in training and not in the cottages.';
+		t.equal(result, expected);
 
 		await page.close();
 		t.end();
@@ -57,39 +47,29 @@ const runTests = async () => {
 		
 		await clickNextButton(page, getURL(141349));
 		const rows = await getDeficenciesRow(page);
+		const incident = await getIncident(rows[0], page, getURL(141349));
 
-		let result = await getIncident(rows[0], page, getURL(141349));
-		let expected = { 
-			activity_date: '7/10/2017',
-			activity_id: 1308054089,
-			standard_number_description: '748.1209(a) - Child Orientation-Provided to child who is 5 years old or older within 7 days of admission and geared to child\'s intellectual level',
-			activity_type: 'Monitoring Inspections',
-			standard_risk_level: 'Medium Low',
-			corrected_at_inspection: false,
-			corrected_date: '7/24/2017',
-			date_correction_verified: '7/31/2017',
-			technical_assistance_given: false,
-			narrative: 'One of the children\'s records reviewed found child was not oriented within 7 days of placement.'
-		};
-		t.deepEqual(result, expected);
+		let result = incident.narrative;
+		let expected = 'One of the children\'s records reviewed found child was not oriented within 7 days of placement.';
+		t.equal(result, expected);
 
 		await page.close();
 		t.end();
 	});
 
-	test('isDeadButtonOrNoButton: When we reach the end of pagination, this should stop the process', async t => {
+	test('isNextButton: When we reach the end of pagination, this should stop the process', async t => {
 		const page = await getDeficencyPage(getURL(95732), browser);
 		let successfulClicks = 0;
 		let isSuccessfulClick = false;
 
-		let isButtonDead = await isDeadButtonOrNoButton(page);
+		let nextButton = await isNextButton(page);
 
-		while (!isButtonDead) {
+		while (nextButton) {
 			isSuccessfulClick = await clickNextButton(page, getURL(95732));
 			if (!isSuccessfulClick) break;
 			successfulClicks++;
 			console.log(`${successfulClicks} successful clicks`);
-			isButtonDead = await isDeadButtonOrNoButton(page);
+			nextButton = await isNextButton(page);
 		}
 
 		let result = successfulClicks;
@@ -119,35 +99,13 @@ const runTests = async () => {
 		const response = await scrapeDefiencyDetails(272125, browser);
 		const deficiencies = response.payload;
 		
-		let resultFirstDeficency = deficiencies[0]
-		let expectedFirstDeficiency = {
-			activity_date: '5/29/2018',
-			activity_id: 1308185545,
-			standard_number_description: '748.3101(2) - Fire Inspection-Must have fire inspection at least once every 12 months from date of last fire inspection',
-			activity_type: 'Assessments',
-			standard_risk_level: 'Medium High',
-			corrected_at_inspection: false,
-			corrected_date: '6/1/2018',
-			date_correction_verified: '6/4/2018',
-			technical_assistance_given: true,
-			narrative: 'A fire inspection was not provided by the operation.'
-		};
-		t.deepEqual(resultFirstDeficency, expectedFirstDeficiency);
+		let resultFirstDeficency = deficiencies[0].narrative
+		let expectedFirstDeficiency = 'A fire inspection was not provided by the operation.';
+		t.equal(resultFirstDeficency, expectedFirstDeficiency);
 
-		let resultLastDeficency = deficiencies[deficiencies.length - 1];
-		let expectedLastDeficiency = {
-			activity_date: '5/29/2018',
-			activity_id: 1308185545, 
-			standard_number_description: '748.3101(2) - Fire Inspection-Must have fire inspection at least once every 12 months from date of last fire inspection',
-			activity_type: 'Assessments',
-			standard_risk_level: 'Medium High',
-			corrected_at_inspection: false,
-			corrected_date: '6/1/2018',
-			date_correction_verified: '6/4/2018',
-			technical_assistance_given: true,
-			narrative: 'A fire inspection was not provided by the operation.'
-		};
-		t.deepEqual(resultFirstDeficency, expectedFirstDeficiency);
+		let resultLastDeficency = deficiencies[deficiencies.length - 1].narrative;
+		let expectedLastDeficiency = 'A fire inspection was not provided by the operation.';
+		t.equal(resultFirstDeficency, expectedFirstDeficiency);
 
 		let resultLen = deficiencies.length;
 		let expectedLen = 63

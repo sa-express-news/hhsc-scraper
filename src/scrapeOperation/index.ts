@@ -26,6 +26,7 @@ export const mergeResponses = (deficiencies: Array<DeficiencyHash>, facility: Fa
 export default async (id: number, browser: Browser) => {
 	const facilityResponse: FacilityResponse = await scrapeFacilityDetails(id).catch(handleError);
 	if (facilityResponse.isSuccessful) {
+		console.log(`Found facility at: ${id}`);
 		const deficiencyResponse: DeficiencyResponse = await scrapeDeficiencyDetails(id, browser);
 		return deficiencyResponse.isSuccessful ? mergeResponses(deficiencyResponse.payload, facilityResponse.payload) : [];
 	} else {

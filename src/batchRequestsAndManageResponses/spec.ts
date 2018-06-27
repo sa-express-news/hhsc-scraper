@@ -6,7 +6,7 @@ import batchRequestsAndManageResponses, { flattenArray, removeEmpties } from './
 
 const operation = {
 	activity_date: 'this is a string',
-    activity_id: 999,
+    non_compliance_id: 999,
     standard_number_description: 'this is a string',
     activity_type: 'this is a string',
     standard_risk_level: 'this is a string',
@@ -67,46 +67,14 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
     
     const response = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser);
 
-    console.log(response);
-
     let lenResult = response.length;
     let lenExpected = 50;
     t.equal(lenResult, lenExpected);
 
-    let hashResult = response[response.length - 1];
-    let hashExpected = { 
-        activity_date: '1/20/2016',
-        activity_id: 1307780819,
-        standard_number_description: '745.625(a)(7) - Initial background checks submitted - At the time you become aware of anyone requiring a background check under 745.615',
-        activity_type: 'Monitoring Inspections',
-        standard_risk_level: 'High',
-        corrected_at_inspection: false,
-        corrected_date: '1/22/2016',
-        date_correction_verified: '2/4/2016',
-        technical_assistance_given: true,
-        narrative: 'One staff person did not have a FBI background check.',
-        operation_id: 94091,
-        operation_number: '42-42',
-        operation_type: 'Child Placing Agency-Adoption Services',
-        operation_name: 'Hope Cottage, Inc.',
-        programs_provided: 'Child Placing Agency',
-        location_address: '609 TEXAS ST DALLAS, TX 75204',
-        phone: '214-526-8721',
-        county: 'DALLAS',
-        website: 'www.hopecottage.org',
-        email: 'adoption@hopecottage.org',
-        type_of_issuance: 'Full Permit',
-        issuance_date: '5/28/1987',
-        open_foster_homes: 31,
-        open_branch_offices: 0,
-        corrective_action: false,
-        adverse_action: false,
-        temporarily_closed: false,
-        num_deficiencies_cited: 3
-    }
-    t.deepEqual(hashResult, hashExpected);
+    let strResult = response[response.length - 1].narrative;
+    let strExpected = 'One staff person did not have a FBI background check.'
+    t.equal(strResult, strExpected);
 
     t.end();
     await browser.close();
-    process.exit(0);
 });

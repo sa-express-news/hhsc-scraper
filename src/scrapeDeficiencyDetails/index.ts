@@ -38,7 +38,7 @@ const handleTechAssistanceError = (err: any) => {
 
 const defaultPayload = () => ({
 	activity_date: 'None',
-    activity_id: null,
+    non_compliance_id: null,
     standard_number_description: 'None',
     activity_type: 'None',
     standard_risk_level: 'None',
@@ -78,7 +78,7 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 		func: getString,
 		cellsIdx: 6,
 	},
-	activity_id: {
+	non_compliance_id: {
 		func: getID,
 		cellsIdx: 7,
 	},
@@ -166,7 +166,7 @@ export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: 
 };
 
 const getDialogListener = () => async (dialog: Dialog) => {
-	console.log(dialog.message());
+	console.log(`Dismissing dialog: ${dialog.message()}`);
 	await dialog.dismiss();
 };
 
@@ -189,7 +189,7 @@ export default async (id: number, browser: Browser) => {
 	turnOffDialogListener(page, dialogListener);
 	await page.close();
 	return {
-		payload: _.uniqBy(payload, 'activity_id'),
+		payload: _.uniqBy(payload, 'non_compliance_id'),
 		isSuccessful: true,
 	};
 }

@@ -3,7 +3,7 @@ import { mergeResponses } from './index';
 
 const deficiency = {
 	activity_date: 'this is a string',
-    activity_id: 999,
+    non_compliance_id: 999,
     standard_number_description: 'this is a string',
     activity_type: 'this is a string',
     standard_risk_level: 'this is a string',
@@ -37,7 +37,7 @@ const facility = {
 
 const operation = {
 	activity_date: 'this is a string',
-    activity_id: 999,
+    non_compliance_id: 999,
     standard_number_description: 'this is a string',
     activity_type: 'this is a string',
     standard_risk_level: 'this is a string',

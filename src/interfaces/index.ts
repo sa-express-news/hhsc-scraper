@@ -1,18 +1,40 @@
 // this is what the parseArguments model returns
-export interface Payload {
-	start: number;
+export interface ParsedArgumentsPayload {
+	start?: number;
 	finish?: number;
+    specific?: Array<number>;
+    scope?: number;
+    throttle?: number; 
 };
 
 export interface ParsedArguments {
 	isSuccessful: boolean;
-	payload: Payload;
+	payload: ParsedArgumentsPayload;
 };
+
+// used to group attempts made and those failed for suspicious reasons
+export interface AttemptedIDs {
+    last_successful: number;
+    last_attempted: number;
+    facility_scraped_deficencies_rejected: Array<number>;
+    hit_alert_page_on_facility_scrape_attempt: Array<number>;
+}
+
+// API query interfaces
+export interface OperationPaths {
+    dataset: string;
+    sqlQuery: string;
+}
+
+export interface IDsPaths {
+    dataset: string;
+    file: string;
+}
 
 // range of IDs for the scraper to explore
 export interface IDRange {
-	start: number;
-	finish: number;
+	range: Array<number>;
+    throttle: number; 
 }
 
 // columns for the facility details page
@@ -51,7 +73,7 @@ export interface DeficencyPopUpHash {
 // columns from the operation deficiencies page
 export interface DeficiencyHash extends DeficencyPopUpHash {
 	activity_date: string;
-    activity_id: number;
+    non_compliance_id: number;
     standard_number_description: string;
     activity_type: string;
     standard_risk_level: string;
@@ -105,7 +127,7 @@ export interface DeficencyHashMapUtils {
 // used for mapping response values through DeficencyHashMapUtils to DeficencyHash
 export interface DeficencyHashMap {
     activity_date: DeficencyHashMapUtils;
-    activity_id: DeficencyHashMapUtils;
+    non_compliance_id: DeficencyHashMapUtils;
     standard_number_description: DeficencyHashMapUtils;
     activity_type: DeficencyHashMapUtils;
     standard_risk_level: DeficencyHashMapUtils;

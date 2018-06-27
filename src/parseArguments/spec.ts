@@ -1,5 +1,5 @@
 import * as test from 'tape';
-import parseArguments, { splitArg, numConvert, controller } from './index';
+import parseArguments, { splitArg, numConvert, commaSplit, controller } from './index';
 
 test('splitArg(\'hello=world\') should be split on \'=\' and return { key: \'hello\', val: \'world\' }', t => {
 	let result = splitArg('hello=world');
@@ -32,6 +32,16 @@ test('calling numConvert with non integer will return \'err\'', t => {
 	let result = numConvert('slayer88', 'finish');
 	let expected = 'err';
 	t.equal(result, expected);
+	t.end();
+});
+
+test('calling commaSplit will split string with two commas into array of numbers with len 3', t => {
+	let numResult = commaSplit('475,123,783652', 'specifc').length;
+	let numExpected = 3;
+	t.equal(numResult, numExpected);
+	let boolResult = typeof commaSplit('4757836,123,783652', 'specifc')[0] === 'number';
+	let boolExpected = true;
+	t.equal(boolResult, boolExpected);
 	t.end();
 });
 

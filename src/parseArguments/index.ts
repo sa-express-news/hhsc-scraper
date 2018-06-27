@@ -8,9 +8,12 @@ import { ParsedArguments } from '../interfaces';
 const keyMap = {
 	start: (val: string, key: string) => numConvert(val, key),
 	finish: (val: string, key: string) => numConvert(val, key),
+	specifc: (val: string, key: string) => commaSplit(val, key),
+	scope: (val: string, key: string) => numConvert(val, key),
+	throttle: (val: string, key: string) => numConvert(val, key),
+
 };
 
-// returns and array split on the commas, often will have length: 1
 export const numConvert = (val: string, key: string) => {
 	const num = parseInt(val.replace(/,/g, ''), 10);
 	if (!Number.isInteger(num)) {
@@ -19,6 +22,11 @@ export const numConvert = (val: string, key: string) => {
 	} else {
 		return num;
 	}
+};
+
+// returns and array split on the commas and converted to number
+export const commaSplit = (val: string, key: string) => {
+	return val.split(',').map((id: string) => numConvert(id, `${key}: ${id}`));
 };
 
 // splitArg takes each input arg and splits it on '=' into { key: '', val: '' }

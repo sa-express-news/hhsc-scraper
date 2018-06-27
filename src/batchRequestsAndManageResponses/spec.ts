@@ -2,6 +2,8 @@ import * as test      from 'tape';
 import * as _         from 'lodash';
 import * as puppeteer from 'puppeteer';
 
+import { ScrapeResult } from '../interfaces';
+
 import batchRequestsAndManageResponses, { flattenArray, removeEmpties } from './index';
 
 const operation = {
@@ -64,14 +66,35 @@ test('flattenArray: Nested arrays should become single array', t => {
 
 test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in groups of 5', async t => {
     const browser = await puppeteer.launch();
-    
-    const response = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser);
 
-    let lenResult = response.length;
+    const attemptedIDs = {
+        last_successful: 90000,
+        last_attempted: 94079,
+        facility_scraped_deficencies_rejected: [85000, 86500],
+        hit_alert_page_on_facility_scrape_attempt: [87555],
+    };
+    
+    const response: ScrapeResult = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDs);
+
+    let lastSuccessResult = response.attemptedIDs.last_successful;
+    let lastSuccessExpected = 94091;
+    t.equal(lastSuccessResult, lastSuccessExpected);
+
+    let lastAttemptResult = response.attemptedIDs.last_attempted;
+    let lastAttemptExpected = 94092;
+    t.equal(lastAttemptResult, lastAttemptExpected);
+
+    let failedScrapeResult = response.attemptedIDs.facility_scraped_deficencies_rejected;
+    let failedScrapeExpected = [85000, 86500];
+    t.deepEqual(failedScrapeResult, failedScrapeExpected);
+
+    const { operations } = response;
+
+    let lenResult = operations.length;
     let lenExpected = 50;
     t.equal(lenResult, lenExpected);
 
-    let strResult = response[response.length - 1].narrative;
+    let strResult = operations[operations.length - 1].narrative;
     let strExpected = 'One staff person did not have a FBI background check.'
     t.equal(strResult, strExpected);
 

@@ -20,6 +20,15 @@ export interface AttemptedIDs {
     hit_alert_page_on_facility_scrape_attempt: Array<number>;
 }
 
+// AttemptedIDHandler interface
+export interface AttemptedIDHandlerInstance {
+    newAttempt: Function;
+    newSuccess: Function;
+    rejectedByAlert: Function;
+    rejectedDeficency: Function;
+    ejectHash: Function;
+}
+
 // API query interfaces
 export interface OperationPaths {
     dataset: string;
@@ -136,4 +145,10 @@ export interface DeficencyHashMap {
     date_correction_verified: DeficencyHashMapUtils;
     technical_assistance_given: DeficencyHashMapUtils;
     narrative: DeficencyHashMapUtils;
+}
+
+// what should be returned into result in root index.ts
+export interface ScrapeResult {
+    operations: Array<OperationHash>;
+    attemptedIDs: AttemptedIDs;
 }

@@ -11,7 +11,8 @@ import scrapeFacilityDetails, {
 	getAddress,
 } from './index';
 
-import requestFacilityDetailsPage from '../requestFacilityDetailsPage';
+import requestFacilityDetailsPage 	from '../requestFacilityDetailsPage';
+import AttemptedIDsHandler			from '../AttemptedIDsHandler';
 
 test('getKey, getNumDeficiencies and isTargetFacility should check to see if GRO is a valid facility to scrape', async t => {
 	const $ 				= await requestFacilityDetailsPage(111812);
@@ -223,7 +224,16 @@ test('test all scraped boolean data from CPA response', async t => {
 });
 
 test('scrapeFacilityDetails: End to end deepequals test of failed scrape', async t => {
-	let result = await scrapeFacilityDetails(99999999999999999)
+	const attemptedIDs = {
+        last_successful: 90000,
+        last_attempted: 94079,
+        facility_scraped_deficencies_rejected: [85000, 86500],
+        hit_alert_page_on_facility_scrape_attempt: [87555],
+    };
+    const range = [1,2,3,4,5];
+    const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);
+
+	let result = await scrapeFacilityDetails(99999999999999999, attemptedIDsHandler)
 	let expected = { isSuccessful: false };
 	
 	t.deepEqual(result, expected);
@@ -231,7 +241,16 @@ test('scrapeFacilityDetails: End to end deepequals test of failed scrape', async
 });
 
 test('scrapeFacilityDetails: End to end deepequals test of successful scrape', async t => {
-	let result = await scrapeFacilityDetails(95732)
+	const attemptedIDs = {
+        last_successful: 90000,
+        last_attempted: 94079,
+        facility_scraped_deficencies_rejected: [85000, 86500],
+        hit_alert_page_on_facility_scrape_attempt: [87555],
+    };
+    const range = [1,2,3,4,5];
+    const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);
+
+	let result = await scrapeFacilityDetails(95732, attemptedIDsHandler)
 	let expected = {
 		isSuccessful: true,
 		payload: { 

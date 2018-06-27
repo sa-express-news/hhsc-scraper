@@ -1,6 +1,6 @@
 import requestFacilityDetailsPage from '../requestFacilityDetailsPage';
 
-import { FacilityResponse, FacilityHash, FacilityHashMap } from '../interfaces';
+import { FacilityResponse, FacilityHash, FacilityHashMap, AttemptedIDHandlerInstance } from '../interfaces';
 
 // returned when there's nothing cooking
 const failedScrape = () => ({ isSuccessful: false });
@@ -34,6 +34,17 @@ export const isCPA = (operationType: string) => {
 export const isGRO = (operationType: string) => {
 	return operationType === 'General Residential Operation';
 };
+
+export const isAlertPage = ($: CheerioSelector, attemptedIDsHandler: AttemptedIDHandlerInstance, id: number) => {
+	const alert = $('div.alert.alert-info');
+	if (alert.length) {
+		console.log('Hit facility alert page!!');
+		attemptedIDsHandler.rejectedByAlert(id)
+		return true;
+	} else {
+		return false;
+	}
+}
 
 // this is the test to decide if we should be scraping this facility
 export const isTargetFacility = (operationType: string, numDeficiencies: number) => {
@@ -125,9 +136,9 @@ export const buildFacilityHash = (keysMap: FacilityHashMap, $: CheerioSelector) 
 	return result;
 }
 
-export default async (id: number) => {
+export default async (id: number, attemptedIDsHandler: AttemptedIDHandlerInstance) => {
 	const $: CheerioSelector = await requestFacilityDetailsPage(id);
-	if (!$) { return failedScrape(); }
+	if (!$ || isAlertPage($, attemptedIDsHandler, id)) { return failedScrape(); }
 
 	const numDeficiencies: number 	= getNumDeficiencies(id, $);
 	const operationType: string 	= getOperationType($);

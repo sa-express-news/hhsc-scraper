@@ -68,12 +68,13 @@ export interface DeficiencyResponse {
 // a row of operation data to be pushed to the DB. This is the ultimate output
 export interface OperationHash extends FacilityHash, DeficiencyHash {}
 
-// keyMap used for building a facilityHash
+// key map used for building a facilityHash
 export interface FacilityHashMapUtils {
 	sel: string;
 	func: Function;
 }
 
+// used for mapping response values through FacilityHashMapUtils to FacilityHash
 export interface FacilityHashMap {
 	operation_id: FacilityHashMapUtils;
 	operation_number: FacilityHashMapUtils;
@@ -93,4 +94,24 @@ export interface FacilityHashMap {
     adverse_action: FacilityHashMapUtils;
     temporarily_closed: FacilityHashMapUtils;
     num_deficiencies_cited: FacilityHashMapUtils;
+}
+
+// key map used for building DeficencyHash
+export interface DeficencyHashMapUtils {
+    func: Function;
+    cellsIdx?: number;
+}
+
+// used for mapping response values through DeficencyHashMapUtils to DeficencyHash
+export interface DeficencyHashMap {
+    activity_date: DeficencyHashMapUtils;
+    activity_id: DeficencyHashMapUtils;
+    standard_number_description: DeficencyHashMapUtils;
+    activity_type: DeficencyHashMapUtils;
+    standard_risk_level: DeficencyHashMapUtils;
+    corrected_at_inspection: DeficencyHashMapUtils;
+    corrected_date: DeficencyHashMapUtils;
+    date_correction_verified: DeficencyHashMapUtils;
+    technical_assistance_given: DeficencyHashMapUtils;
+    narrative: DeficencyHashMapUtils;
 }

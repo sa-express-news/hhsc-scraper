@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 
 // interfaces
-import { DeficiencyHash, DeficencyPopUpHash } 	from '../interfaces';
-import { Browser, Page, ElementHandle, Dialog } from 'puppeteer';
+import { DeficiencyHash, DeficencyPopUpHash, DeficencyHashMap } from '../interfaces';
+import { Browser, Page, ElementHandle, Dialog } 				from 'puppeteer';
 
 // modules
 import { 
@@ -49,18 +49,6 @@ const defaultPayload = () => ({
     narrative: 'None',
 });
 
-export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;
-
-export const getString = (cells, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
-
-export const getBoolean = (cells, cellsIdx: number) => {
-	if (typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0) {
-		return cells[cellsIdx] !== 'No';
-	} else {
-		return null;
-	}
-};
-
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	activity_date: {
 		func: getString,
@@ -102,9 +90,21 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	},
 });
 
+export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;
+
+export const getString = (cells, cellsIdx: number) => typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0 ? cells[cellsIdx] : 'None'
+
+export const getBoolean = (cells, cellsIdx: number) => {
+	if (typeof cells[cellsIdx] === 'string' && cells[cellsIdx].length > 0) {
+		return cells[cellsIdx] !== 'No';
+	} else {
+		return null;
+	}
+};
+
 export const pluckValues = async (cells: Array<string | number>, popupContent: DeficencyPopUpHash, element: ElementHandle) => {
 	const result: DeficiencyHash = defaultPayload();
-	const valsMap = getValsMap(popupContent);
+	const valsMap: DeficencyHashMap = getValsMap(popupContent);
 	for (let key in valsMap) {
 		if (valsMap.hasOwnProperty(key)) {
 			result[key] = await valsMap[key].func(cells, valsMap[key].cellsIdx, element);

@@ -54,9 +54,7 @@ export const clickNextButton = async (page: Page, url: string) => {
 };
 
 export const clickButtonOnPage = async (page: Page, sel: string, url: string) => {
-	console.log('attempting nav click');
 	const res = await handleClickEvent(page, url, async () => await page.click(sel).catch(handleError));
-	console.log('successful nav click');
 	return res;
 };
 
@@ -67,9 +65,7 @@ export const getCells = (el: ElementHandle) => {
 export const getNarrativeLink = (el: ElementHandle) => el.$('td.dxgv a');
 
 export const clickElement = async (el: ElementHandle, page: Page, url:string) => {
-	console.log('attempting element click');
 	const res = await handleClickEvent(page, url, async () => await el.click().catch(handleError));
-	console.log('successful element click');
 	return res;
 };
 

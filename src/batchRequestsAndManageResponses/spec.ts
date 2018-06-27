@@ -65,7 +65,9 @@ test('flattenArray: Nested arrays should become single array', t => {
 test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in groups of 5', async t => {
     const browser = await puppeteer.launch();
     
-    const response = await batchRequestsAndManageResponses(_.range(94080, 94093), 1, browser);
+    const response = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser);
+
+    console.log(response);
 
     let lenResult = response.length;
     let lenExpected = 50;

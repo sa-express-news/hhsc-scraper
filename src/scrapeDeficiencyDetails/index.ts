@@ -1,6 +1,8 @@
+import * as _ from 'lodash';
+
 // interfaces
 import { DeficiencyHash, DeficencyPopUpHash } 	from '../interfaces';
-import { Browser, Page, ElementHandle, Dialog } 		from 'puppeteer';
+import { Browser, Page, ElementHandle, Dialog } from 'puppeteer';
 
 // modules
 import { 
@@ -119,7 +121,6 @@ export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, 
 		const technicalAssistanceGiven 	= await getTechnicalAssistanceGiven(page).catch(handleTechAssistanceError);
 		const narrative 				= await getNarrative(page).catch(handleNarrativeError);
 		await closeNarrativeBox(page);
-		console.log('narrative box closed');
 		return Object.assign({}, technicalAssistanceGiven, narrative);
 	} else {
 		return Object.assign({}, handleTechAssistanceError('Tech assist click failed!'), handleNarrativeError('Narrative click failed!'));
@@ -188,7 +189,7 @@ export default async (id: number, browser: Browser) => {
 	turnOffDialogListener(page, dialogListener);
 	await page.close();
 	return {
-		payload,
+		payload: _.uniqBy(payload, 'activity_id'),
 		isSuccessful: true,
 	};
 }

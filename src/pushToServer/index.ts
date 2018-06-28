@@ -15,16 +15,16 @@ const handleError = (err: any) => console.error(err);
  * Push the outpus CSV to data.world
  */
 
-const setPOSTConfigObj = (filename: string, dir: string, extension: string) => ({
+const setPOSTConfigObj = (filename: string, dir: string, extension: string, contentType: string) => ({
 	method: 'POST',
 	uri: `https://api.data.world/v0/uploads/expressnews/dfps-cpainvestigations-data/files?expandArchives=false`,
 	formData: {
 		file: {
 			name: filename,
-			value: fs.createReadStream(`./${dir}/${filename}.csv`),
+			value: fs.createReadStream(`./${dir}/${filename}.${extension}`),
 			options: {
-				filename: `./${filename}.csv`,
-				contentType: 'text/csv',
+				filename: `./${filename}.${extension}`,
+				contentType: contentType,
 			},
 		}, 
 	},
@@ -33,7 +33,7 @@ const setPOSTConfigObj = (filename: string, dir: string, extension: string) => (
 	},
 });
 
-const pushSyncedData = (filename: string, dir: string, extension: string) => rp(setPOSTConfigObj(filename, dir, extension));
+const pushSyncedData = (filename: string, dir: string, extension: string, contentType: string) => rp(setPOSTConfigObj(filename, dir, extension, contentType));
 
 /*
  * Generate a CSV file from the array of objects and push it to data.world
@@ -49,19 +49,23 @@ const setStringifyOptions = () => ({
 const saveCSV = async (data: Array<OperationHash>, filename: string) => new Promise((resolve, reject) => {
 	csv.stringify(data, setStringifyOptions(), (err, output) => {
 		if (err) reject(err);
-		else {
-			console.log(`Pushing ${filename} to data.world`);
-			pushSyncedData(filename, 'results', 'csv').then(resolve).catch(reject);
-		}
+		fs.writeFile(`./results/${filename}.csv`, output, async error => {
+			if (error) reject(error);
+			else {
+				console.log(`Pushing ${filename} to data.world`);
+				pushSyncedData(filename, 'results', 'csv', 'text/csv').then(resolve).catch(reject);
+			}
+		});
 	})
 }).catch(handleError);
 
 const saveJSON = async (data: AttemptedIDs, filename: string) => new Promise((resolve, reject) => {
-	fs.writeFile(`${filename}.json`, data, 'utf8', (err: any) => {
+	const json = JSON.stringify(data);
+	fs.writeFile(`./logs/${filename}.json`, json, 'utf8', (err: any) => {
 		if (err) reject(err);
 		else {
 			console.log(`Pushing ${filename} to data.world`);
-			pushSyncedData(filename, 'logs', 'json').then(resolve).catch(reject);
+			pushSyncedData(filename, 'logs', 'json', 'json').then(resolve).catch(reject);
 		}
 	});
 }).catch(handleError);

@@ -47,7 +47,8 @@ const runScraper = async () => {
 		// this is the meat and potatoes command
 		const { operations, attemptedIDs }: ScrapeResult = await batchRequestsAndManageResponses(range, throttle, browser, prevAttemptedIDs).catch((err: any) => handleError(err, prevAttemptedIDs));
 		// push the new data, the backup data and the attemptedIDs to the server
-		await pushToServer(operations, existingData, attemptedIDs)
+		await pushToServer(operations, existingData, attemptedIDs);
+		console.log('Successfully completed scrape!');
 	} else {
 		console.error('Pull from API failed or one or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');
 	}

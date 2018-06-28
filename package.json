@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "ts-node node_modules/tape/bin/tape src/**/spec.ts",
-    "scrape": "build/index.js"
+    "scraper": "build/index.js"
   },
   "repository": {
     "type": "git",

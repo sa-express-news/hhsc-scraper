@@ -54,7 +54,7 @@ export default async (range: Array<number>, throttle: number, browser: Browser, 
 	while (pointer < range.length) {
 		console.log(`Next range: ${range[pointer]} to ${range[pointer] + throttle}`);
 		current = await updateCurrent(range, pointer, throttle, browser, attemptedIDsHandler).catch(handleError);
-		console.log(`Finished ${range[pointer]} with ${current.length} responses`);
+		console.log(`Finished ${range[pointer]} to ${range[pointer] + throttle} with ${current.length} responses`);
 
 		operations = operations.concat(current);
 		pointer += throttle;

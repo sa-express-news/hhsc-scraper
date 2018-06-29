@@ -1,12 +1,13 @@
 import * as test 	from 'tape';
 import * as _ 		from 'lodash';
 
-import pullFromServer from './index';
+import pullFromServer 	from './index';
+import logger 			from '../logger';
 
 import { OperationHash, AttemptedIDs } from '../interfaces';
 
 test('getOperations returns an array of objects with a numerical \'operation_id\' property', async t => {
-	const response: Array<OperationHash> = await pullFromServer.getOperations().catch(() => null);
+	const response: Array<OperationHash> = await pullFromServer.getOperations(logger()).catch(() => null);
 
 	let result = _.isArray(response);
 	let expected = true;
@@ -23,7 +24,7 @@ test('getOperations returns an array of objects with a numerical \'operation_id\
 });
 
 test('getAttemptedIDs returns a hash with expected properties and types', async t => {
-	const response: AttemptedIDs = await pullFromServer.getAttemptedIDs().catch(() => null);
+	const response: AttemptedIDs = await pullFromServer.getAttemptedIDs(logger()).catch(() => null);
 
 	let result = response.hasOwnProperty('last_successful') && typeof response.last_successful === 'number';
 	let expected = true;

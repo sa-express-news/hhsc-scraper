@@ -5,35 +5,39 @@ import * as fs from 'fs';
 import * as csv from 'csv';
 
 // interfaces
-import { OperationHash, AttemptedIDs } from '../interfaces';
+import { OperationHash, AttemptedIDs, APIConfig } 	from '../interfaces';
+import { Logger } 									from 'winston';
 
 const apiKey = process.env.DW_API_KEY;
 
-const handleError = (err: any) => console.error(err);
+const handleError = (err: any, logger: Logger) => logger.error(err);
 
 /*
  * Push the outpus CSV to data.world
  */
 
-const setPOSTConfigObj = (filename: string, dir: string, extension: string, contentType: string) => ({
-	method: 'POST',
-	uri: `https://api.data.world/v0/uploads/expressnews/dfps-cpainvestigations-data/files?expandArchives=false`,
-	formData: {
-		file: {
-			name: filename,
-			value: fs.createReadStream(`./${dir}/${filename}.${extension}`),
-			options: {
-				filename: `./${filename}.${extension}`,
-				contentType: contentType,
-			},
-		}, 
-	},
-	headers: {
-		'Authorization': `Bearer ${apiKey}`,
-	},
-});
+const setPOSTConfigObj = (apiConfig: APIConfig) => {
+	const { filename, dir, ext, contentType } = apiConfig;
+	return {
+		method: 'POST',
+		uri: `https://api.data.world/v0/uploads/expressnews/dfps-cpainvestigations-data/files?expandArchives=false`,
+		formData: {
+			file: {
+				name: filename,
+				value: fs.createReadStream(`./${dir}/${filename}.${ext}`),
+				options: {
+					filename: `./${filename}.${ext}`,
+					contentType,
+				},
+			}, 
+		},
+		headers: {
+			'Authorization': `Bearer ${apiKey}`,
+		},
+	}
+};
 
-const pushSyncedData = (filename: string, dir: string, extension: string, contentType: string) => rp(setPOSTConfigObj(filename, dir, extension, contentType));
+const pushSyncedData = (apiConfig: APIConfig) => rp(setPOSTConfigObj(apiConfig));
 
 /*
  * Generate a CSV file from the array of objects and push it to data.world
@@ -42,36 +46,46 @@ const pushSyncedData = (filename: string, dir: string, extension: string, conten
 const setStringifyOptions = () => ({
 	header: true,
 	formatters: {
-		bool: bool => bool ? '1' : '0',
-	},
+		'bool': bool => bool ? '1' : '0',
+	}
 });
 
-const saveCSV = async (data: Array<OperationHash>, filename: string) => new Promise((resolve, reject) => {
+const saveCSV = async (data: Array<OperationHash>, filename: string, logger: Logger) => new Promise((resolve, reject) => {
 	csv.stringify(data, setStringifyOptions(), (err, output) => {
 		if (err) reject(err);
 		fs.writeFile(`./results/${filename}.csv`, output, async error => {
 			if (error) reject(error);
 			else {
-				console.log(`Pushing ${filename} to data.world`);
-				pushSyncedData(filename, 'results', 'csv', 'text/csv').then(resolve).catch(reject);
+				logger.info(`Pushing ${filename} to data.world`);
+				pushSyncedData({
+					filename,
+					dir: 'results',
+					ext: 'csv',
+					contentType: 'text/csv'
+				}).then(resolve).catch(reject);
 			}
 		});
 	})
-}).catch(handleError);
+}).catch((err: any) => handleError(err, logger));
 
-const saveJSON = async (data: AttemptedIDs, filename: string) => new Promise((resolve, reject) => {
+const saveJSON = async (data: AttemptedIDs, filename: string, logger: Logger) => new Promise((resolve, reject) => {
 	const json = JSON.stringify(data);
 	fs.writeFile(`./logs/${filename}.json`, json, 'utf8', (err: any) => {
 		if (err) reject(err);
 		else {
-			console.log(`Pushing ${filename} to data.world`);
-			pushSyncedData(filename, 'logs', 'json', 'json').then(resolve).catch(reject);
+			logger.info(`Pushing ${filename} to data.world`);
+			pushSyncedData({
+				filename,
+				dir: 'logs',
+				ext: 'json',
+				contentType: 'application/json'
+			}).then(resolve).catch(reject);
 		}
 	});
-}).catch(handleError);
+}).catch((err: any) => handleError(err, logger));
 
-export default async (operations: Array<OperationHash>, operationsBackup: Array<OperationHash>, attemptedIDs: AttemptedIDs) => {
-	await saveCSV(operations, 'hhsc-deficency-data');
-	await saveCSV(operationsBackup, 'backup-hhsc-deficency-data');
-	await saveJSON(attemptedIDs, 'attempted-ids');
+export default async (operations: Array<OperationHash>, operationsBackup: Array<OperationHash>, attemptedIDs: AttemptedIDs, logger: Logger) => {
+	await saveCSV(operations, 'hhsc-deficency-data', logger);
+	await saveCSV(operationsBackup, 'backup-hhsc-deficency-data', logger);
+	await saveJSON(attemptedIDs, 'attempted-ids', logger);
 };

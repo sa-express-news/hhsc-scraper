@@ -1,6 +1,12 @@
 import requestFacilityDetailsPage from '../requestFacilityDetailsPage';
 
-import { FacilityResponse, FacilityHash, FacilityHashMap, AttemptedIDHandlerInstance } from '../interfaces';
+import { 
+	FacilityResponse,
+	FacilityHash,
+	FacilityHashMap,
+	AttemptedIDHandlerInstance
+} 								from '../interfaces';
+import { Logger } 				from 'winston';									
 
 // returned when there's nothing cooking
 const failedScrape = () => ({ isSuccessful: false });
@@ -35,10 +41,10 @@ export const isGRO = (operationType: string) => {
 	return operationType === 'General Residential Operation';
 };
 
-export const isAlertPage = ($: CheerioSelector, attemptedIDsHandler: AttemptedIDHandlerInstance, id: number) => {
+export const isAlertPage = ($: CheerioSelector, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger, id: number) => {
 	const alert = $('div.alert.alert-info');
 	if (alert.length) {
-		console.log('Hit facility alert page!!');
+		logger.info('Hit facility alert page!!');
 		attemptedIDsHandler.rejectedByAlert(id)
 		return true;
 	} else {
@@ -82,6 +88,11 @@ export const getNumber = ($: CheerioSelector, sel: string) => {
 	return Number.isInteger(val) ? val : null;
 };
 
+export const getDate = ($: CheerioSelector, sel: string) => {
+	const str = getString($, sel);
+	return str === '&nbsp;' ? '' : str;
+};
+
 // if we know there's no GRO value in a column, just return 0 for that type
 export const getCPANumber = (operationType: string, $: CheerioSelector, sel: string) => isCPA(operationType) ? getNumber($, sel) : 0;
 
@@ -116,7 +127,7 @@ export const getKeysMap = (operationID: number, operationType: string, numDefice
 	website: { sel: 'font:contains("Website Address:")', func: getString },
 	email: { sel: 'font:contains("Email Address:")', func: getString },
 	type_of_issuance: { sel: 'font:contains("Type of Issuance:")', func: getString },
-	issuance_date: { sel: 'font:contains("Issuance Date:")', func: getString },
+	issuance_date: { sel: 'font:contains("Issuance Date:")', func: getDate },
 	open_foster_homes: { sel: 'font:contains("Open Foster Homes:")', func: getCPANumber.bind(null, operationType) },
 	open_branch_offices: { sel: 'font:contains("Open Branch Offices:")', func: getCPANumber.bind(null, operationType) },
 	corrective_action: { sel: 'font:contains("Corrective Action:")', func: getBoolean },
@@ -136,9 +147,9 @@ export const buildFacilityHash = (keysMap: FacilityHashMap, $: CheerioSelector) 
 	return result;
 }
 
-export default async (id: number, attemptedIDsHandler: AttemptedIDHandlerInstance) => {
-	const $: CheerioSelector = await requestFacilityDetailsPage(id);
-	if (!$ || isAlertPage($, attemptedIDsHandler, id)) { return failedScrape(); }
+export default async (id: number, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger) => {
+	const $: CheerioSelector = await requestFacilityDetailsPage(id, logger);
+	if (!$ || isAlertPage($, attemptedIDsHandler, logger, id)) { return failedScrape(); }
 
 	const numDeficiencies: number 	= getNumDeficiencies(id, $);
 	const operationType: string 	= getOperationType($);

@@ -6,6 +6,8 @@ test('populate handler, add new values and eject', t => {
 	const attemptedIDs = {
 		last_successful: 1000,
 	    last_attempted: 1500,
+	    total_from_last_scrape: 46,
+		total_in_database: 300,
 	    facility_scraped_deficencies_rejected: [256, 400, 836],
 	    hit_alert_page_on_facility_scrape_attempt: [321, 699],
 	};
@@ -20,13 +22,16 @@ test('populate handler, add new values and eject', t => {
 	attemptedIDsHandler.rejectedByAlert(1503);
 	attemptedIDsHandler.newAttempt(836);
 	attemptedIDsHandler.rejectedDeficency(836);
-
+	attemptedIDsHandler.setScrapeTotal(100)
+	attemptedIDsHandler.setDBTotal(400)
 
 
 	let result = attemptedIDsHandler.ejectHash();
 	let expected = {
 		last_successful: 1501,
 	    last_attempted: 1503,
+	    total_from_last_scrape: 100,
+		total_in_database: 400,
 	    facility_scraped_deficencies_rejected: [256, 836],
 	    hit_alert_page_on_facility_scrape_attempt: [1503],
 	};

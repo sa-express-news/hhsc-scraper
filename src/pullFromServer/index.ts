@@ -4,6 +4,7 @@ import * as rp from 'request-promise';
 
 // interfaces
 import { AttemptedIDs, OperationHash, OperationPaths, IDsPaths } from '../interfaces';
+import { Logger } from 'winston';
 
 const apiKey = process.env.DW_API_KEY;
 
@@ -37,13 +38,13 @@ const setOperationsConfigObj = (paths: OperationPaths) => ({
 	json: true,
 });
 
-const getOperations = () => rp(setOperationsConfigObj(getOperationPaths()))
+const getOperations = (logger: Logger) => rp(setOperationsConfigObj(getOperationPaths()))
 				.then((res: Array<OperationHash>) => res)
-				.catch((err: any) => console.error(err));
+				.catch((err: any) => logger.error(err));
 
-const getAttemptedIDs = () => rp(setIDsConfigObj(getIDsPaths()))
+const getAttemptedIDs = (logger: Logger) => rp(setIDsConfigObj(getIDsPaths()))
 				.then((res: AttemptedIDs) => res)
-				.catch((err: any) => console.error(err));
+				.catch((err: any) => logger.error(err));
 
 export default {
 	getOperations,

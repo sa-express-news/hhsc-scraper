@@ -9,13 +9,15 @@ import scrapeFacilityDetails, {
 	getBoolean,
 	getPrograms,
 	getAddress,
+	getDate,
 } from './index';
 
 import requestFacilityDetailsPage 	from '../requestFacilityDetailsPage';
 import AttemptedIDsHandler			from '../AttemptedIDsHandler';
+import logger						from '../logger';
 
 test('getKey, getNumDeficiencies and isTargetFacility should check to see if GRO is a valid facility to scrape', async t => {
-	const $ 				= await requestFacilityDetailsPage(111812);
+	const $ 				= await requestFacilityDetailsPage(111812, logger());
 	const operationType 	= getOperationType($);
 	const numDeficiencies 	= getNumDeficiencies(111812, $);
 
@@ -33,7 +35,7 @@ test('getKey, getNumDeficiencies and isTargetFacility should check to see if GRO
 });
 
 test('getKey, getNumDeficiencies and isTargetFacility should check to see if CPA is a valid facility to scrape', async t => {
-	const $ 				= await requestFacilityDetailsPage(1229119);
+	const $ 				= await requestFacilityDetailsPage(1229119, logger());
 	const operationType 	= getOperationType($);
 	const numDeficiencies 	= getNumDeficiencies(1229119, $);
 
@@ -51,7 +53,7 @@ test('getKey, getNumDeficiencies and isTargetFacility should check to see if CPA
 });
 
 test('getKey, getNumDeficiencies and isTargetFacility should check to see if invalid operation is a valid facility to scrape', async t => {
-	const $ 				= await requestFacilityDetailsPage(111);
+	const $ 				= await requestFacilityDetailsPage(111, logger());
 	const operationType 	= getOperationType($);
 	const numDeficiencies 	= getNumDeficiencies(111, $);
 
@@ -69,7 +71,7 @@ test('getKey, getNumDeficiencies and isTargetFacility should check to see if inv
 });
 
 test('test all scraped string data from GRO response', async t => {
-	const $ = await requestFacilityDetailsPage(353978);
+	const $ = await requestFacilityDetailsPage(353978, logger());
 
 	let result = getString($, 'font:contains("Operation Number:")');
 	let expectation = '894969';
@@ -103,7 +105,7 @@ test('test all scraped string data from GRO response', async t => {
 	expectation = 'Full Permit';
 	t.equal(result, expectation);
 
-	result = getString($, 'font:contains("Issuance Date:")');
+	result = getDate($, 'font:contains("Issuance Date:")');
 	expectation = '2/2/2009';
 	t.equal(result, expectation);
 
@@ -115,7 +117,7 @@ test('test all scraped string data from GRO response', async t => {
 });
 
 test('test all scraped number data from GRO response', async t => {
-	const $ = await requestFacilityDetailsPage(111812);
+	const $ = await requestFacilityDetailsPage(111812, logger());
 
 	let result = getCPANumber('General Residential Operation', $, 'font:contains("Open Foster Homes:")');
 	let expectation = 0;
@@ -128,7 +130,7 @@ test('test all scraped number data from GRO response', async t => {
 });
 
 test('test all scraped boolean data from GRO response', async t => {
-	const $ = await requestFacilityDetailsPage(1252288);
+	const $ = await requestFacilityDetailsPage(1252288, logger());
 
 	let result = getBoolean($, 'font:contains("Corrective Action:")');
 	let expectation = false;
@@ -146,7 +148,7 @@ test('test all scraped boolean data from GRO response', async t => {
 });
 
 test('test all scraped string data from CPA response', async t => {
-	const $ = await requestFacilityDetailsPage(312384);
+	const $ = await requestFacilityDetailsPage(312384, logger());
 
 	let result = getString($, 'font:contains("Operation Number:")');
 	let expectation = '870277-3270';
@@ -192,7 +194,7 @@ test('test all scraped string data from CPA response', async t => {
 });
 
 test('test all scraped number data from CPA response', async t => {
-	const $ = await requestFacilityDetailsPage(231654);
+	const $ = await requestFacilityDetailsPage(231654, logger());
 
 	let result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Foster Homes:")');
 	let expectation = 25;
@@ -206,7 +208,7 @@ test('test all scraped number data from CPA response', async t => {
 });
 
 test('test all scraped boolean data from CPA response', async t => {
-	const $ = await requestFacilityDetailsPage(153033);
+	const $ = await requestFacilityDetailsPage(153033, logger());
 
 	let result = getBoolean($, 'font:contains("Corrective Action:")');
 	let expectation = true;
@@ -227,13 +229,15 @@ test('scrapeFacilityDetails: End to end deepequals test of failed scrape', async
 	const attemptedIDs = {
         last_successful: 90000,
         last_attempted: 94079,
+        total_from_last_scrape: 46,
+		total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
         hit_alert_page_on_facility_scrape_attempt: [87555],
     };
     const range = [1,2,3,4,5];
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);
 
-	let result = await scrapeFacilityDetails(99999999999999999, attemptedIDsHandler)
+	let result = await scrapeFacilityDetails(99999999999999999, attemptedIDsHandler, logger())
 	let expected = { isSuccessful: false };
 	
 	t.deepEqual(result, expected);
@@ -244,13 +248,15 @@ test('scrapeFacilityDetails: End to end deepequals test of successful scrape', a
 	const attemptedIDs = {
         last_successful: 90000,
         last_attempted: 94079,
+        total_from_last_scrape: 46,
+		total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
         hit_alert_page_on_facility_scrape_attempt: [87555],
     };
     const range = [1,2,3,4,5];
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);
 
-	let result = await scrapeFacilityDetails(95732, attemptedIDsHandler)
+	let result = await scrapeFacilityDetails(95732, attemptedIDsHandler, logger())
 	let expected = {
 		isSuccessful: true,
 		payload: { 

@@ -35,6 +35,8 @@ test('buildRange should figure out start point and remining spaces from attempte
 	const attemptedIDs = {
 		last_successful: 1000,
 	    last_attempted: 1500,
+	    total_from_last_scrape: 46,
+        total_in_database: 300,
 	    facility_scraped_deficencies_rejected: [256, 400, 836],
 	    hit_alert_page_on_facility_scrape_attempt: [321, 699],
 	};

@@ -24,6 +24,7 @@
     "@types/puppeteer": "^1.5.0",
     "@types/request-promise": "^4.1.41",
     "@types/tape": "^4.2.31",
+    "@types/winston": "^2.3.9",
     "dotenv": "^4.0.0",
     "tape": "^4.8.0",
     "ts-node": "^3.3.0",
@@ -35,6 +36,7 @@
     "lodash": "^4.17.10",
     "puppeteer": "^1.5.0",
     "request": "^2.87.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "winston": "^3.0.0"
   }
 }

@@ -4,7 +4,9 @@ import * as puppeteer from 'puppeteer';
 
 import { ScrapeResult } from '../interfaces';
 
-import batchRequestsAndManageResponses, { flattenArray, removeEmpties } from './index';
+import batchRequestsAndManageResponses, { flattenArray, removeEmpties }    from './index';
+import createLogger                                                        from '../logger';
+import AttemptedIDsHandler                                                 from '../AttemptedIDsHandler';
 
 const operation = {
 	activity_date: 'this is a string',
@@ -66,15 +68,19 @@ test('flattenArray: Nested arrays should become single array', t => {
 
 test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in groups of 5', async t => {
     const browser = await puppeteer.launch();
+    const logger = createLogger();
 
     const attemptedIDs = {
         last_successful: 90000,
         last_attempted: 94079,
+        total_from_last_scrape: 46,
+        total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
         hit_alert_page_on_facility_scrape_attempt: [87555],
     };
+    const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, _.range(94080, 94093));
     
-    const response: ScrapeResult = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDs);
+    const response: ScrapeResult = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDsHandler, logger);
 
     let lastSuccessResult = response.attemptedIDs.last_successful;
     let lastSuccessExpected = 94091;

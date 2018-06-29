@@ -16,6 +16,8 @@ export interface ParsedArguments {
 export interface AttemptedIDs {
     last_successful: number;
     last_attempted: number;
+    total_from_last_scrape: number;
+    total_in_database: number;
     facility_scraped_deficencies_rejected: Array<number>;
     hit_alert_page_on_facility_scrape_attempt: Array<number>;
 }
@@ -26,6 +28,8 @@ export interface AttemptedIDHandlerInstance {
     newSuccess: Function;
     rejectedByAlert: Function;
     rejectedDeficency: Function;
+    setScrapeTotal: Function;
+    setDBTotal: Function;
     ejectHash: Function;
 }
 
@@ -151,4 +155,12 @@ export interface DeficencyHashMap {
 export interface ScrapeResult {
     operations: Array<OperationHash>;
     attemptedIDs: AttemptedIDs;
+}
+
+// to push to server
+export interface APIConfig {
+    filename: string;
+    dir: string;
+    ext: string;
+    contentType: string;
 }

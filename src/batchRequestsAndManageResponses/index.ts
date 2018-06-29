@@ -5,10 +5,10 @@ import {
 	AttemptedIDHandlerInstance
 } 								from '../interfaces';
 import { Browser } 				from 'puppeteer';
+import { Logger }				from 'winston';
 
 // modules
 import scrapeOperation		from '../scrapeOperation';
-import AttemptedIDsHandler 	from '../AttemptedIDsHandler';
 
 export const flattenArray = (batch: Array<Array<OperationHash>>) => ([] as Array<OperationHash>).concat(...batch);
 
@@ -20,13 +20,14 @@ export const getOperations = (
 	pointer: number,
 	throttle: number,
 	browser: Browser,
-	attemptedIDsHandler: AttemptedIDHandlerInstance
+	attemptedIDsHandler: AttemptedIDHandlerInstance,
+	logger: Logger
 ) => range.slice(pointer, pointer + throttle).map(
-	(id: number) => scrapeOperation(id, browser, attemptedIDsHandler)
+	(id: number) => scrapeOperation(id, browser, attemptedIDsHandler, logger)
 );
 
-const handleError = (err: any) => {
-	console.error(err);
+const handleError = (err: any, logger: Logger) => {
+	logger.error(err)
 	return [];
 };
 
@@ -36,25 +37,24 @@ export const updateCurrent = (
 	pointer: number,
 	throttle: number,
 	browser: Browser,
-	attemptedIDsHandler: AttemptedIDHandlerInstance
+	attemptedIDsHandler: AttemptedIDHandlerInstance,
+	logger: Logger
 ) => {
 	return Promise.all(
-		getOperations(range, pointer, throttle, browser, attemptedIDsHandler)
+		getOperations(range, pointer, throttle, browser, attemptedIDsHandler, logger)
 	).then(removeEmpties).then(flattenArray);
 };
 
-export default async (range: Array<number>, throttle: number, browser: Browser, prevAttemptedIDs: AttemptedIDs) => {
-	const attemptedIDsHandler: AttemptedIDHandlerInstance = new AttemptedIDsHandler(prevAttemptedIDs, range);
-
+export default async (range: Array<number>, throttle: number, browser: Browser, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger) => {
 	let pointer: number = 0;
 	let current: Array<OperationHash>;
 	let operations: Array<OperationHash> = [];
 
 	// the while loop is used to batch requests to the HHSC server
 	while (pointer < range.length) {
-		console.log(`Next range: ${range[pointer]} to ${range[pointer] + throttle}`);
-		current = await updateCurrent(range, pointer, throttle, browser, attemptedIDsHandler).catch(handleError);
-		console.log(`Finished ${range[pointer]} to ${range[pointer] + throttle} with ${current.length} responses`);
+		logger.info(`Next range: ${range[pointer]} to ${range[pointer] + throttle}`);
+		current = await updateCurrent(range, pointer, throttle, browser, attemptedIDsHandler, logger).catch((err) => handleError(err, logger));
+		logger.info(`Finished ${range[pointer]} to ${range[pointer] + throttle} with ${current.length} responses`);
 
 		operations = operations.concat(current);
 		pointer += throttle;

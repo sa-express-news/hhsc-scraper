@@ -1,8 +1,13 @@
 import * as _ from 'lodash';
 
 // interfaces
-import { DeficiencyHash, DeficencyPopUpHash, DeficencyHashMap } from '../interfaces';
-import { Browser, Page, ElementHandle, Dialog } 				from 'puppeteer';
+import { 
+	DeficiencyHash,
+	DeficencyPopUpHash,
+	DeficencyHashMap,
+} 												from '../interfaces';
+import { Browser, Page, ElementHandle, Dialog } from 'puppeteer';
+import { Logger }								from 'winston';
 
 // modules
 import { 
@@ -13,28 +18,21 @@ import {
 	getCells,
 	clickElement, 
 	getNarrativeLink,
-	getTechnicalAssistanceGiven,
 	closeNarrativeBox,
-	getNarrative,
 	getID,
 } from '../headlessBrowserUtils';
 
 const failedScrape = () => ({ isSuccessful: false, payload: [] });
 
-const handleError = (payload: Array<DeficiencyHash>, err: any) => {
-	console.error(err);
+const handleError = (payload: Array<DeficiencyHash>, err: any, logger: Logger) => {
+	logger.error(err);
 	return payload;	
 }
 
-const handleNarrativeError = (err: any) => {
-	console.error(err);
+const handleNarrativeError = (err: any, logger: Logger) => {
+	logger.error(err);
 	return { narrative: 'Error retrieving' };
 }
-
-const handleTechAssistanceError = (err: any) => {
-	console.error(err);
-	return { technical_assistance_given: null };
-};
 
 const defaultPayload = () => ({
 	activity_date: 'None',
@@ -51,7 +49,7 @@ const defaultPayload = () => ({
 
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 	activity_date: {
-		func: getString,
+		func: getDate,
 		cellsIdx: 0,
 	},
     standard_number_description: {
@@ -71,11 +69,11 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 		cellsIdx: 4,
 	},
     corrected_date: {
-		func: getString,
+		func: getDate,
 		cellsIdx: 5,
 	},
     date_correction_verified: {
-		func: getString,
+		func: getDate,
 		cellsIdx: 6,
 	},
 	non_compliance_id: {
@@ -102,6 +100,11 @@ export const getBoolean = (cells, cellsIdx: number) => {
 	}
 };
 
+export const getDate = (cells, cellsIdx: number) => {
+	const str = getString(cells, cellsIdx);
+	return str === '&nbsp;' ? '' : str;
+};
+
 export const pluckValues = async (cells: Array<string | number>, popupContent: DeficencyPopUpHash, element: ElementHandle) => {
 	const result: DeficiencyHash = defaultPayload();
 	const valsMap: DeficencyHashMap = getValsMap(popupContent);
@@ -113,60 +116,75 @@ export const pluckValues = async (cells: Array<string | number>, popupContent: D
 	return result;
 };
 
-export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, url: string) => {
-	const el 				= await getNarrativeLink(element);
-	const isClickSuccessful = await clickElement(el, page, url);
+export const parseNarrativeResponse = (response: string) => {
+	const bump = response.indexOf('\'FB|0|\\\'') !== -1 ? 4 : 3; // handling the oddities of the string response
+	const start = '0|/*DX*/({\'result\':{\'html\':\'FB|'.length + bump;
+	const split = response.indexOf('^');
+	const narrative = response.slice(start, split).trim().replace(/\s\s+/g, ' ');
+	const technical_assistance_given = response.indexOf('^Yes') !== -1;
+	return { narrative, technical_assistance_given };
+};
 
-	if (isClickSuccessful) {
-		const technicalAssistanceGiven 	= await getTechnicalAssistanceGiven(page).catch(handleTechAssistanceError);
-		const narrative 				= await getNarrative(page).catch(handleNarrativeError);
-		await closeNarrativeBox(page);
-		return Object.assign({}, technicalAssistanceGiven, narrative);
+export const isCrossThreadError = (narrative: string) => {
+	// this handles a frustrating problem with the HHSC website. Occassionally, clicking on the narrative popup will trigger a DevExpress cross thread issue on their backend
+	// we have to handle this in two ways. First we need to dismiss the popup (done via listener set in default), second we need to request the popup a second time
+	return narrative.indexOf('generalError') !== -1;
+};
+
+export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, url: string, logger: Logger) => {
+	const el 		= await getNarrativeLink(element);
+	const response 	= await clickElement(el, page, url, logger);
+
+	if (response) {
+		await closeNarrativeBox(page, logger);
+		return isCrossThreadError(response) ? await scrapeNarrativePopups(element, page, url, logger) : parseNarrativeResponse(response);
 	} else {
-		return Object.assign({}, handleTechAssistanceError('Tech assist click failed!'), handleNarrativeError('Narrative click failed!'));
+		return Object.assign({}, { technical_assistance_given: null }, handleNarrativeError('Popup click failed!', logger));
 	}
 };
 
-export const getIncident = async (element: ElementHandle, page: Page, url: string) => {
+export const getIncident = async (element: ElementHandle, page: Page, url: string, logger: Logger) => {
 	const cells: Array<string | number> 	= await getCells(element);
-	const popupContent: DeficencyPopUpHash 	= await scrapeNarrativePopups(element, page, url);
+	const popupContent: DeficencyPopUpHash 	= await scrapeNarrativePopups(element, page, url, logger);
 	return await pluckValues(cells, popupContent, element);
 };
 
-export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url: string) => {
+export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url: string, logger: Logger) => {
 	const incidents: Array<DeficiencyHash> = [];
 	let incident: DeficiencyHash;
 
 	for (let i = 0; i < rows.length; i++) {
-		incident = await getIncident(rows[i], page, url)
+		incident = await getIncident(rows[i], page, url, logger)
 		incidents.push(incident);
 	}
 
 	return incidents;
 };
 
-export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string, rows: Array<ElementHandle>) => {
-	const incidents: Array<DeficiencyHash> = await getIncidentRow(rows, page, url).catch((err) => err);
-	if (!incidents) return handleError(payload, incidents);
+export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string, rows: Array<ElementHandle>, logger: Logger) => {
+	const incidents: Array<DeficiencyHash> = await getIncidentRow(rows, page, url, logger).catch((err) => err);
+	if (!incidents) return handleError(payload, incidents, logger);
 
 	payload = payload.concat(incidents);
 
-	const nextButton: boolean = await isNextButton(page);
+	const nextButton: boolean = await isNextButton(page, logger);
 	if (nextButton) {
-		const isClickSuccessful = await clickNextButton(page, url);
+		const isClickSuccessful = await clickNextButton(page, url, logger);
 		if (!isClickSuccessful) return payload;
 
 		const nextRows: Array<ElementHandle> = await getDeficenciesRow(page);
 		if (nextRows.length === 0) return payload;
 
-		return await scrapeRowsFromTable(payload, page, url, nextRows).catch((err) => handleError(payload, err));
+		return await scrapeRowsFromTable(payload, page, url, nextRows, logger).catch((err) => handleError(payload, err, logger));
 	} else {
 		return payload;
 	}
 };
 
-const getDialogListener = () => async (dialog: Dialog) => {
-	console.log(`Dismissing dialog: ${dialog.message()}`);
+const getDialogListener = (logger: Logger) => async (dialog: Dialog) => {
+	// Occassionally when a narrative is requested, the HHSC website returns a Cross-thread operation error
+	// this listener dismisses the resulting popup
+	logger.info(`Dismissing dialog: ${dialog.message()}`);
 	await dialog.dismiss();
 };
 
@@ -174,17 +192,17 @@ const turnOnDialogListener = (page: Page, dialogListener) => page.on('dialog', d
 
 const turnOffDialogListener = (page: Page, dialogListner) => page.removeListener('dialog', dialogListner);
 
-export default async (id: number, browser: Browser) => {
-	const page: Page = await getDeficencyPage(getURL(id), browser);
+export default async (id: number, browser: Browser, logger: Logger) => {
+	const page: Page = await getDeficencyPage(getURL(id), browser, logger);
 	if (!page) return failedScrape();
 
-	const dialogListener = getDialogListener();
+	const dialogListener = getDialogListener(logger);
 	turnOnDialogListener(page, dialogListener);
 
 	const rows: Array<ElementHandle> = await getDeficenciesRow(page);
 	if (rows.length === 0) return failedScrape();
 
-	const payload: Array<DeficiencyHash> = await scrapeRowsFromTable([], page, getURL(id), rows).catch((err) => handleError([], err));
+	const payload: Array<DeficiencyHash> = await scrapeRowsFromTable([], page, getURL(id), rows, logger).catch((err) => handleError([], err, logger));
 
 	turnOffDialogListener(page, dialogListener);
 	await page.close();

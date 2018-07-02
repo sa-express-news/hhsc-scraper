@@ -56,6 +56,7 @@ const runScraper = async () => {
 		await pushToServer(master, existingData, attemptedIDsHandler.ejectHash(), logger);
 		await browser.close();
 		logger.info('Successfully completed scrape!');
+		return master;
 	} else {
 		logger.error('Pull from API failed or one or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');
 	}

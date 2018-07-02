@@ -9,7 +9,6 @@ import {
 	IDRange,
 	AttemptedIDHandlerInstance,
 	OperationHash,
-	ScrapeResult
 } 					from './interfaces';
 import { Browser } 	from 'puppeteer';
 import { Logger } 	from 'winston';
@@ -25,17 +24,14 @@ import mergeDataToMaster				from './mergeDataToMaster';
 import pushToServer						from './pushToServer';
 
 // Number of IDs to try and pluck with each scrape
-const defaultScope: number = 1000;
+const defaultScope: number = 10000;
 
 // The amount of requests to make simultaneously
 const defaultThrottle: number = 10;
 
 const handleError = (err: any, attemptedIDs: AttemptedIDs, logger: Logger) => {
 	logger.error(err);
-	return {
-		operations: [],
-		attemptedIDs,
-	};
+	return [];
 }
 
 const runScraper = async () => {
@@ -53,11 +49,11 @@ const runScraper = async () => {
 		// start logging attempted IDs
 		const attemptedIDsHandler: AttemptedIDHandlerInstance = new AttemptedIDsHandler(prevAttemptedIDs, range);
 		// this is the meat and potatoes command
-		const { operations, attemptedIDs }: ScrapeResult = await batchRequestsAndManageResponses(range, throttle, browser, attemptedIDsHandler, logger).catch((err: any) => handleError(err, prevAttemptedIDs, logger));
+		const operations: Array<OperationHash> = await batchRequestsAndManageResponses(range, throttle, browser, attemptedIDsHandler, logger).catch((err: any) => handleError(err, prevAttemptedIDs, logger));
 		// add the new data tp the previously scraped data
 		const master: Array<OperationHash> = mergeDataToMaster(operations, existingData, attemptedIDsHandler);
 		// push the new data, the backup data and the attemptedIDs to the server
-		await pushToServer(master, existingData, attemptedIDs, logger);
+		await pushToServer(master, existingData, attemptedIDsHandler.ejectHash(), logger);
 		await browser.close();
 		logger.info('Successfully completed scrape!');
 	} else {

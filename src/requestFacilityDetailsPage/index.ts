@@ -6,6 +6,7 @@ import { Logger } from 'winston';
 
 const setConfigObj = (id: number) => ({
 	uri: `http://www.dfps.state.tx.us/child_care/search_texas_child_care/ppFacilityDetails.asp?ptype=RC&fid=${id}`,
+	timeout: 30000,
 });
 
 const handleError = (err: any, logger: Logger) => {

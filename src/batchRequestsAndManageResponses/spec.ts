@@ -2,8 +2,6 @@ import * as test      from 'tape';
 import * as _         from 'lodash';
 import * as puppeteer from 'puppeteer';
 
-import { ScrapeResult } from '../interfaces';
-
 import batchRequestsAndManageResponses, { flattenArray, removeEmpties }    from './index';
 import createLogger                                                        from '../logger';
 import AttemptedIDsHandler                                                 from '../AttemptedIDsHandler';
@@ -80,21 +78,7 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
     };
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, _.range(94080, 94093));
     
-    const response: ScrapeResult = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDsHandler, logger);
-
-    let lastSuccessResult = response.attemptedIDs.last_successful;
-    let lastSuccessExpected = 94091;
-    t.equal(lastSuccessResult, lastSuccessExpected);
-
-    let lastAttemptResult = response.attemptedIDs.last_attempted;
-    let lastAttemptExpected = 94092;
-    t.equal(lastAttemptResult, lastAttemptExpected);
-
-    let failedScrapeResult = response.attemptedIDs.facility_scraped_deficencies_rejected;
-    let failedScrapeExpected = [85000, 86500];
-    t.deepEqual(failedScrapeResult, failedScrapeExpected);
-
-    const { operations } = response;
+    const operations = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDsHandler, logger);
 
     let lenResult = operations.length;
     let lenExpected = 50;

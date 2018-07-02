@@ -151,12 +151,6 @@ export interface DeficencyHashMap {
     narrative: DeficencyHashMapUtils;
 }
 
-// what should be returned into result in root index.ts
-export interface ScrapeResult {
-    operations: Array<OperationHash>;
-    attemptedIDs: AttemptedIDs;
-}
-
 // to push to server
 export interface APIConfig {
     filename: string;

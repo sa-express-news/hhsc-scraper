@@ -43,7 +43,9 @@ const getOperations = (logger: Logger) => rp(setOperationsConfigObj(getOperation
 				.catch((err: any) => logger.error(err));
 
 const getAttemptedIDs = (logger: Logger) => rp(setIDsConfigObj(getIDsPaths()))
-				.then((res: AttemptedIDs) => res)
+				.then((res: string) => {
+					return JSON.parse(JSON.stringify(res));
+				})
 				.catch((err: any) => logger.error(err));
 
 export default {

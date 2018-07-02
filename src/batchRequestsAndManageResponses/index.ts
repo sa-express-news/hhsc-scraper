@@ -60,8 +60,5 @@ export default async (range: Array<number>, throttle: number, browser: Browser, 
 		pointer += throttle;
 	}
 	
-	return {
-		operations,
-		attemptedIDs: attemptedIDsHandler.ejectHash(),
-	};
+	return operations;
 }

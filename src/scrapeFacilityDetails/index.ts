@@ -45,7 +45,6 @@ export const isAlertPage = ($: CheerioSelector, attemptedIDsHandler: AttemptedID
 	const alert = $('div.alert.alert-info');
 	if (alert.length) {
 		logger.info('Hit facility alert page!!');
-		attemptedIDsHandler.rejectedByAlert(id)
 		return true;
 	} else {
 		return false;
@@ -149,7 +148,10 @@ export const buildFacilityHash = (keysMap: FacilityHashMap, $: CheerioSelector) 
 
 export default async (id: number, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger) => {
 	const $: CheerioSelector = await requestFacilityDetailsPage(id, logger);
-	if (!$ || isAlertPage($, attemptedIDsHandler, logger, id)) { return failedScrape(); }
+	if (!$ || isAlertPage($, attemptedIDsHandler, logger, id)) { 
+		attemptedIDsHandler.rejectedByAlert(id);
+		return failedScrape(); 
+	}
 
 	const numDeficiencies: number 	= getNumDeficiencies(id, $);
 	const operationType: string 	= getOperationType($);

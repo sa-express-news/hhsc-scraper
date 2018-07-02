@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as csv from 'csv';
 
 // interfaces
-import { OperationHash, AttemptedIDs, APIConfig } 	from '../interfaces';
+import { OperationHash, AttemptedIDs, APIConfig, ParsedArgumentsPayload } 	from '../interfaces';
 import { Logger } 									from 'winston';
 
 const apiKey = process.env.DW_API_KEY;
@@ -65,7 +65,20 @@ const saveCSV = async (data: Array<OperationHash>, filename: string, logger: Log
 				}).then(resolve).catch(reject);
 			}
 		});
-	})
+	});
+}).catch((err: any) => handleError(err, logger));
+
+const saveTemp = async (data: Array<OperationHash>, filename: string, logger: Logger) => new Promise((resolve, reject) => {
+	csv.stringify(data, setStringifyOptions(), (err, output) => {
+		if (err) reject(err);
+		fs.writeFile(`./temp/${filename}.csv`, output, async error => {
+			if (error) reject(error);
+			else {
+				logger.info(`${filename} saved to /temp`);
+				resolve(output);
+			}
+		});
+	});
 }).catch((err: any) => handleError(err, logger));
 
 const saveJSON = async (data: AttemptedIDs, filename: string, logger: Logger) => new Promise((resolve, reject) => {
@@ -84,8 +97,11 @@ const saveJSON = async (data: AttemptedIDs, filename: string, logger: Logger) =>
 	});
 }).catch((err: any) => handleError(err, logger));
 
-export default async (operations: Array<OperationHash>, operationsBackup: Array<OperationHash>, attemptedIDs: AttemptedIDs, logger: Logger) => {
+export default async (operations: Array<OperationHash>, operationsBackup: Array<OperationHash>, bashArgs: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, logger: Logger) => {
 	await saveCSV(operations, 'hhsc-deficency-data', logger);
 	await saveCSV(operationsBackup, 'backup-hhsc-deficency-data', logger);
+	if (bashArgs.batchidx) {
+		await saveTemp(operationsBackup, `hhsc-deficency-data-${bashArgs.batchidx}`, logger);
+	}
 	await saveJSON(attemptedIDs, 'attempted-ids', logger);
 };

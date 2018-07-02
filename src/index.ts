@@ -53,7 +53,7 @@ const runScraper = async () => {
 		// add the new data tp the previously scraped data
 		const master: Array<OperationHash> = mergeDataToMaster(operations, existingData, attemptedIDsHandler);
 		// push the new data, the backup data and the attemptedIDs to the server
-		await pushToServer(master, existingData, attemptedIDsHandler.ejectHash(), logger);
+		await pushToServer(master, existingData, parsedArguments.payload, attemptedIDsHandler.ejectHash(), logger);
 		await browser.close();
 		logger.info('Successfully completed scrape!');
 		return master;

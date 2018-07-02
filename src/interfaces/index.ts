@@ -4,7 +4,8 @@ export interface ParsedArgumentsPayload {
 	finish?: number;
     specific?: Array<number>;
     scope?: number;
-    throttle?: number; 
+    throttle?: number;
+    batchidx?: number;
 };
 
 export interface ParsedArguments {

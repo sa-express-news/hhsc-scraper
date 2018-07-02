@@ -11,7 +11,7 @@ const keyMap = {
 	specifc: (val: string, key: string) => commaSplit(val, key),
 	scope: (val: string, key: string) => numConvert(val, key),
 	throttle: (val: string, key: string) => numConvert(val, key),
-
+	batchidx: (val: string, key: string) => numConvert(val, key),
 };
 
 export const numConvert = (val: string, key: string) => {

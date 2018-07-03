@@ -29,7 +29,7 @@ import pushToServer						from './pushToServer';
 const defaultScope: number = 10000;
 
 // The amount of requests to make simultaneously
-const defaultThrottle: number = 5;
+const defaultThrottle: number = 10;
 
 const handleError = (err: any, attemptedIDs: AttemptedIDs, logger: Logger) => {
 	logger.error(err);

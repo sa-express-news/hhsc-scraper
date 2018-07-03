@@ -1,7 +1,7 @@
 # remove the contents of the temporary dir, used as a backup if scraper breaks amid a huge session
 rm -rf temp/*
 # the number of times to run the scraper this round
-batch=110
+batch=107
 # will be used to countdown the remaining rounds
 x=$batch
 while [ $x -gt 0 ]

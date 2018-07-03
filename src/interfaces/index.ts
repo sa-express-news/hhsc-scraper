@@ -20,14 +20,14 @@ export interface AttemptedIDs {
     total_from_last_scrape: number;
     total_in_database: number;
     facility_scraped_deficencies_rejected: Array<number>;
-    hit_alert_page_on_facility_scrape_attempt: Array<number>;
+    facility_timeout_or_alert_page: Array<number>;
 }
 
 // AttemptedIDHandler interface
 export interface AttemptedIDHandlerInstance {
     newAttempt: Function;
     newSuccess: Function;
-    rejectedByAlert: Function;
+    rejectedFacility: Function;
     rejectedDeficency: Function;
     setScrapeTotal: Function;
     setDBTotal: Function;
@@ -87,7 +87,6 @@ export interface DeficencyPopUpHash {
 // columns from the operation deficiencies page
 export interface DeficiencyHash extends DeficencyPopUpHash {
 	activity_date: string;
-    non_compliance_id: number;
     standard_number_description: string;
     activity_type: string;
     standard_risk_level: string;
@@ -101,8 +100,13 @@ export interface DeficiencyResponse {
 	payload?: Array<DeficiencyHash>;
 }
 
-// a row of operation data to be pushed to the DB. This is the ultimate output
+// a row of operation data
 export interface OperationHash extends FacilityHash, DeficiencyHash {}
+
+// what will be pushed to the DB. This is the ultimate output
+export interface UniqOperationHash extends OperationHash {
+    uniq_id: number;
+}
 
 // key map used for building a facilityHash
 export interface FacilityHashMapUtils {
@@ -141,7 +145,6 @@ export interface DeficencyHashMapUtils {
 // used for mapping response values through DeficencyHashMapUtils to DeficencyHash
 export interface DeficencyHashMap {
     activity_date: DeficencyHashMapUtils;
-    non_compliance_id: DeficencyHashMapUtils;
     standard_number_description: DeficencyHashMapUtils;
     activity_type: DeficencyHashMapUtils;
     standard_risk_level: DeficencyHashMapUtils;

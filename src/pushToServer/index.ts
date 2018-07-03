@@ -12,10 +12,7 @@ const apiKey = process.env.DW_API_KEY;
 
 const handleError = (err: any, logger: Logger) => logger.error(err);
 
-/*
- * Push the outpus CSV to data.world
- */
-
+// Config our POST request for data.world API
 const setPOSTConfigObj = (apiConfig: APIConfig) => {
 	const { filename, dir, ext, contentType } = apiConfig;
 	return {
@@ -39,10 +36,7 @@ const setPOSTConfigObj = (apiConfig: APIConfig) => {
 
 const pushSyncedData = (apiConfig: APIConfig) => rp(setPOSTConfigObj(apiConfig));
 
-/*
- * Generate a CSV file from the array of objects and push it to data.world
- */
-
+// data.world gets grumpy when it recieves true or false
 const setStringifyOptions = () => ({
 	header: true,
 	formatters: {
@@ -50,6 +44,7 @@ const setStringifyOptions = () => ({
 	}
 });
 
+// push the new data and the backup to the server and save it to /results
 const saveCSV = async (data: Array<OperationHash>, filename: string, logger: Logger) => new Promise((resolve, reject) => {
 	csv.stringify(data, setStringifyOptions(), (err, output) => {
 		if (err) reject(err);
@@ -68,6 +63,7 @@ const saveCSV = async (data: Array<OperationHash>, filename: string, logger: Log
 	});
 }).catch((err: any) => handleError(err, logger));
 
+// used to store the temporary DB contents in /temp. Does not get pushed to server
 const saveTemp = async (data: Array<OperationHash>, filename: string, logger: Logger) => new Promise((resolve, reject) => {
 	csv.stringify(data, setStringifyOptions(), (err, output) => {
 		if (err) reject(err);
@@ -81,6 +77,7 @@ const saveTemp = async (data: Array<OperationHash>, filename: string, logger: Lo
 	});
 }).catch((err: any) => handleError(err, logger));
 
+// used to push attemptedIDs to the server and to /logs
 const saveJSON = async (data: AttemptedIDs, filename: string, logger: Logger) => new Promise((resolve, reject) => {
 	const json = JSON.stringify(data);
 	fs.writeFile(`./logs/${filename}.json`, json, 'utf8', (err: any) => {

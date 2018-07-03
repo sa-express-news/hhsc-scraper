@@ -19,7 +19,6 @@ import {
 	clickElement, 
 	getNarrativeLink,
 	closeNarrativeBox,
-	getID,
 } from '../headlessBrowserUtils';
 
 const failedScrape = () => ({ isSuccessful: false, payload: [] });
@@ -36,7 +35,6 @@ const handleNarrativeError = (err: any, logger: Logger) => {
 
 const defaultPayload = () => ({
 	activity_date: 'None',
-    non_compliance_id: null,
     standard_number_description: 'None',
     activity_type: 'None',
     standard_risk_level: 'None',
@@ -76,10 +74,6 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
 		func: getDate,
 		cellsIdx: 6,
 	},
-	non_compliance_id: {
-		func: getID,
-		cellsIdx: 7,
-	},
 	technical_assistance_given: {
 		func: () => popupContent.technical_assistance_given,
 	},
@@ -105,6 +99,7 @@ export const getDate = (cells, cellsIdx: number) => {
 	return str === '&nbsp;' ? '' : str;
 };
 
+// use our hash map to pluck the corresponding values from the cells in the TD element
 export const pluckValues = async (cells: Array<string | number>, popupContent: DeficencyPopUpHash, element: ElementHandle) => {
 	const result: DeficiencyHash = defaultPayload();
 	const valsMap: DeficencyHashMap = getValsMap(popupContent);
@@ -116,6 +111,7 @@ export const pluckValues = async (cells: Array<string | number>, popupContent: D
 	return result;
 };
 
+// we grab the response data after clicking the popup link and parse it using regex.
 export const parseNarrativeResponse = (response: string) => {
 	const bump = response.indexOf('\'FB|0|\\\'') !== -1 ? 4 : 3; // handling the oddities of the string response
 	const start = '0|/*DX*/({\'result\':{\'html\':\'FB|'.length + bump;
@@ -131,6 +127,8 @@ export const isCrossThreadError = (narrative: string) => {
 	return narrative.indexOf('generalError') !== -1;
 };
 
+// here we need to click on the link to open the popup containing the narrative and the technical_assitance_given number, once we open the popup, we scrape it. 
+// The HHSC website can be super buggy here and we need to handle possible errors, sometimes recursively trying to click the link again but also being prepared to bail and try again later
 export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, url: string, logger: Logger) => {
 	const el 		= await getNarrativeLink(element);
 	const response 	= await clickElement(el, page, url, logger);
@@ -161,6 +159,8 @@ export const getIncidentRow = async (rows: Array<ElementHandle>, page: Page, url
 	return incidents;
 };
 
+// this is a recursive function that takes scrapes data from all the table rows and then attempts to click the table pagination button
+// if a second table page is successfully loaded, the function runs again, continously until no more table pages are available to scrape
 export const scrapeRowsFromTable = async (payload: Array<DeficiencyHash>, page: Page, url: string, rows: Array<ElementHandle>, logger: Logger) => {
 	const incidents: Array<DeficiencyHash> = await getIncidentRow(rows, page, url, logger).catch((err) => err);
 	if (!incidents) return handleError(payload, incidents, logger);
@@ -199,6 +199,7 @@ export default async (id: number, browser: Browser, logger: Logger) => {
 	const dialogListener = getDialogListener(logger);
 	turnOnDialogListener(page, dialogListener);
 
+	// find the table of deficencies of the page and pluck all the rows (deficencies) from said table
 	const rows: Array<ElementHandle> = await getDeficenciesRow(page);
 	if (rows.length === 0) return failedScrape();
 
@@ -207,7 +208,7 @@ export default async (id: number, browser: Browser, logger: Logger) => {
 	turnOffDialogListener(page, dialogListener);
 	await page.close();
 	return {
-		payload: _.uniqBy(payload, 'non_compliance_id'),
+		payload,
 		isSuccessful: true,
 	};
 }

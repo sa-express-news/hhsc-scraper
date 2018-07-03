@@ -38,7 +38,7 @@ test('buildRange should figure out start point and remining spaces from attempte
 	    total_from_last_scrape: 46,
         total_in_database: 300,
 	    facility_scraped_deficencies_rejected: [256, 400, 836],
-	    hit_alert_page_on_facility_scrape_attempt: [321, 699],
+	    facility_timeout_or_alert_page: [321, 699],
 	};
 	const scope = 1000
 	const range = buildRange(attemptedIDs, scope);

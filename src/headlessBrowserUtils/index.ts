@@ -75,9 +75,3 @@ export const clickElement = async (el: ElementHandle, page: Page, url:string, lo
 export const closeNarrativeBox = async (page: Page, logger: Logger) => {
 	return await page.click('div.dxpcLite_Glass.dxpclW div.dxpc-closeBtn a').catch((err: any) => handleError(err, logger))
 };
-
-export const getID = async (cells, cellsIdx: number, el: ElementHandle) => {
-	const onclick: string = await el.$eval('td.dxgv a', (a: HTMLLinkElement) => a.getAttribute('onclick'));
-	// extract the id from the arguments of the function
-	return parseInt(onclick.match(/\d+/)[0], 10);
-};

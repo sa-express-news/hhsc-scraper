@@ -8,7 +8,6 @@ import AttemptedIDsHandler                                                 from 
 
 const operation = {
 	activity_date: 'this is a string',
-    non_compliance_id: 999,
     standard_number_description: 'this is a string',
     activity_type: 'this is a string',
     standard_risk_level: 'this is a string',
@@ -74,7 +73,7 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
         total_from_last_scrape: 46,
         total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
-        hit_alert_page_on_facility_scrape_attempt: [87555],
+        facility_timeout_or_alert_page: [87555],
     };
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, _.range(94080, 94093));
     

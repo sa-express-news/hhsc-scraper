@@ -17,6 +17,6 @@ const handleError = (err: any, logger: Logger) => {
 export const readPage = (html: string) => cheerio.load(html);
 
 export const getPage = (id: number, logger: Logger) => rp(setConfigObj(id))
-				.catch((err: any) => logger.error(err));
+				.catch((err: any) => handleError(err, logger));
 
 export default async (id: number, logger: Logger) => await getPage(id, logger).then(readPage).catch((err: any) => handleError(err, logger));

@@ -41,6 +41,7 @@ export const isGRO = (operationType: string) => {
 	return operationType === 'General Residential Operation';
 };
 
+// occasionally, the HHSC website will redirect our request to a login page, if this happens, bail and log the ID for a future attempt
 export const isAlertPage = ($: CheerioSelector, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger, id: number) => {
 	const alert = $('div.alert.alert-info');
 	if (alert.length) {
@@ -149,7 +150,8 @@ export const buildFacilityHash = (keysMap: FacilityHashMap, $: CheerioSelector) 
 export default async (id: number, attemptedIDsHandler: AttemptedIDHandlerInstance, logger: Logger) => {
 	const $: CheerioSelector = await requestFacilityDetailsPage(id, logger);
 	if (!$ || isAlertPage($, attemptedIDsHandler, logger, id)) { 
-		attemptedIDsHandler.rejectedByAlert(id);
+		// we're going to try this ID again later
+		attemptedIDsHandler.rejectedFacility(id);
 		return failedScrape(); 
 	}
 

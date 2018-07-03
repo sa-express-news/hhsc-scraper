@@ -20,7 +20,7 @@ export const getFinish = (payload: ParsedArgumentsPayload, scope: number) => pay
 
 export const spreadRange = (start: number, finish: number) => _.range(start, finish);
 
-export const stackFailedAttempts = (attemptedIds: AttemptedIDs) => attemptedIds.facility_scraped_deficencies_rejected.concat(attemptedIds.hit_alert_page_on_facility_scrape_attempt);
+export const stackFailedAttempts = (attemptedIds: AttemptedIDs) => attemptedIds.facility_scraped_deficencies_rejected.concat(attemptedIds.facility_timeout_or_alert_page);
 
 export const buildRange = (attemptedIds: AttemptedIDs, scope: number) => {
 	const start: number 				= attemptedIds.last_attempted + 1;
@@ -30,9 +30,12 @@ export const buildRange = (attemptedIds: AttemptedIDs, scope: number) => {
 };
 
 export default (payload: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, defaultScope: number, defaultThrottle: number) => {
+	// This is the amount of IDs to scrape simultaneously. Be wary of overloading the HHSC website
 	const throttle: number 	= getThrottle(payload, defaultThrottle);
+	// The total amount of IDs to attempt to scrape in each round
 	const scope: number		= getScope(payload, defaultScope);
 
+	// if an array of specific IDs was passed to the scraper, just return that
 	if (payload.specific) {
 		return {
 			range: payload.specific,
@@ -40,6 +43,7 @@ export default (payload: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, def
 		}
 	}
 
+	// if a start ID was provided, look for a finish, failing that, use scope var
 	if (payload.start) {
 		const finish: number = getFinish(payload, scope);
 		return {
@@ -48,6 +52,7 @@ export default (payload: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, def
 		}
 	}
 
+	// if running the scraper w/ specific ranges, use the attemptedIDs log to figure out where to start scraping
 	return {
 		range: buildRange(attemptedIDs, scope),
 		throttle,

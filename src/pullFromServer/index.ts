@@ -44,7 +44,7 @@ const getOperations = (logger: Logger) => rp(setOperationsConfigObj(getOperation
 
 const getAttemptedIDs = (logger: Logger) => rp(setIDsConfigObj(getIDsPaths()))
 				.then((res: string) => {
-					return JSON.parse(JSON.stringify(res));
+					return JSON.parse(JSON.stringify(res)); // file is not JSON in response but an obj string, so we stingify before parsing
 				})
 				.catch((err: any) => logger.error(err));
 

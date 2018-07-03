@@ -9,6 +9,7 @@ import {
 	IDRange,
 	AttemptedIDHandlerInstance,
 	OperationHash,
+	UniqOperationHash,
 } 					from './interfaces';
 import { Browser } 	from 'puppeteer';
 import { Logger } 	from 'winston';
@@ -20,6 +21,7 @@ import pullFromServer					from './pullFromServer';
 import getIDRange 						from './getIDRange';
 import AttemptedIDsHandler				from './AttemptedIDsHandler';
 import batchRequestsAndManageResponses	from './batchRequestsAndManageResponses';
+import addUniqueID						from './addUniqueID';
 import mergeDataToMaster				from './mergeDataToMaster';
 import pushToServer						from './pushToServer';
 
@@ -27,7 +29,7 @@ import pushToServer						from './pushToServer';
 const defaultScope: number = 10000;
 
 // The amount of requests to make simultaneously
-const defaultThrottle: number = 10;
+const defaultThrottle: number = 5;
 
 const handleError = (err: any, attemptedIDs: AttemptedIDs, logger: Logger) => {
 	logger.error(err);
@@ -35,11 +37,11 @@ const handleError = (err: any, attemptedIDs: AttemptedIDs, logger: Logger) => {
 }
 
 const runScraper = async () => {
-	// if the bash script contained start and end numbers, pluck them
-	const logger: Logger 						= createLogger();
-	const parsedArguments: ParsedArguments 		= parseArguments(process.argv.slice(2));
-	const existingData: Array<OperationHash> 	= await pullFromServer.getOperations(logger).catch(() => null);
-	const prevAttemptedIDs: AttemptedIDs		= await pullFromServer.getAttemptedIDs(logger).catch(() => null);
+	// create the error logger, parse possible arguments, grab data already in DB and attemptedIDs JSON log
+	const logger: Logger 							= createLogger();
+	const parsedArguments: ParsedArguments 			= parseArguments(process.argv.slice(2));
+	const existingData: Array<UniqOperationHash> 	= await pullFromServer.getOperations(logger).catch(() => null);
+	const prevAttemptedIDs: AttemptedIDs			= await pullFromServer.getAttemptedIDs(logger).catch(() => null);
 
 	if (parsedArguments.isSuccessful && existingData && prevAttemptedIDs) {
 		// Fire up a headless browser
@@ -50,12 +52,15 @@ const runScraper = async () => {
 		const attemptedIDsHandler: AttemptedIDHandlerInstance = new AttemptedIDsHandler(prevAttemptedIDs, range);
 		// this is the meat and potatoes command
 		const operations: Array<OperationHash> = await batchRequestsAndManageResponses(range, throttle, browser, attemptedIDsHandler, logger).catch((err: any) => handleError(err, prevAttemptedIDs, logger));
+		// add unique IDs to the new operations
+		const uniqOperations: Array<UniqOperationHash> = addUniqueID(operations, existingData);
 		// add the new data tp the previously scraped data
-		const master: Array<OperationHash> = mergeDataToMaster(operations, existingData, attemptedIDsHandler);
+		const master: Array<UniqOperationHash> = mergeDataToMaster(uniqOperations, existingData, attemptedIDsHandler);
 		// push the new data, the backup data and the attemptedIDs to the server
 		await pushToServer(master, existingData, parsedArguments.payload, attemptedIDsHandler.ejectHash(), logger);
 		await browser.close();
 		logger.info('Successfully completed scrape!');
+		// rejoice
 		return master;
 	} else {
 		logger.error('Pull from API failed or one or more of the arguments passed to the scraper was invalid, please check the Readme for format deatils: https://github.com/sa-express-news/census-gopher#readme');

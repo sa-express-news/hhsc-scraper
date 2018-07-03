@@ -4,10 +4,10 @@ import * as _ 		from 'lodash';
 import pullFromServer 	from './index';
 import logger 			from '../logger';
 
-import { OperationHash, AttemptedIDs } from '../interfaces';
+import { UniqOperationHash, AttemptedIDs } from '../interfaces';
 
 test('getOperations returns an array of objects with a numerical \'operation_id\' property', async t => {
-	const response: Array<OperationHash> = await pullFromServer.getOperations(logger()).catch(() => null);
+	const response: Array<UniqOperationHash> = await pullFromServer.getOperations(logger()).catch(() => null);
 
 	let result = _.isArray(response);
 	let expected = true;

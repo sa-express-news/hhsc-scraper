@@ -9,7 +9,7 @@ class AttemptedIDsHandler implements AttemptedIDHandlerInstance {
 	private totalLastScrape: number;
 	private totalInDB: number;
 	private rejectedDeficencies: Array<number>;
-	private facilityAlert: Array<number>;
+	private rejectedFacilities: Array<number>;
 
 	constructor(attemptedIDs: AttemptedIDs, range: Array<number>) {
 		this.lastSuccessful 		= attemptedIDs.last_successful;
@@ -17,10 +17,11 @@ class AttemptedIDsHandler implements AttemptedIDHandlerInstance {
 		this.totalLastScrape		= attemptedIDs.total_from_last_scrape;
 		this.totalInDB				= attemptedIDs.total_in_database;
 		this.rejectedDeficencies 	= this.findUnattemptedIDs(attemptedIDs.facility_scraped_deficencies_rejected, range);
-		this.facilityAlert 			= this.findUnattemptedIDs(attemptedIDs.hit_alert_page_on_facility_scrape_attempt, range);
+		this.rejectedFacilities 	= this.findUnattemptedIDs(attemptedIDs.facility_timeout_or_alert_page, range);
 	}
 
 	private findUnattemptedIDs(previouslyRejected: Array<number>, range: Array<number>) {
+		// here we want to make sure all failed attempts from previous scrapes are added to the queue for the new scrape
 		return _.difference(previouslyRejected, _.intersection(previouslyRejected, range));
 	}
 
@@ -38,11 +39,13 @@ class AttemptedIDsHandler implements AttemptedIDHandlerInstance {
 		return id;
 	}
 
-	public rejectedByAlert(id: number) {
-		return this.facilityAlert.push(id);
+	public rejectedFacility(id: number) {
+		// something went wrong trying to scrape this facility
+		return this.rejectedFacilities.push(id);
 	}
 
 	public rejectedDeficency(id: number) {
+		// something went wrong attempting to scrape deficencies for this facility
 		return this.rejectedDeficencies.push(id);
 	}
 
@@ -55,13 +58,14 @@ class AttemptedIDsHandler implements AttemptedIDHandlerInstance {
 	}
 
 	public ejectHash() {
+		// return an attemptedIDs hash with the updated data
 		return {
 			last_successful: this.lastSuccessful,
 			last_attempted: this.lastAttempted,
 			total_from_last_scrape: this.totalLastScrape,
 			total_in_database: this.totalInDB,
 			facility_scraped_deficencies_rejected: this.rejectedDeficencies,
-			hit_alert_page_on_facility_scrape_attempt: this.facilityAlert,
+			facility_timeout_or_alert_page: this.rejectedFacilities,
 		};
 	}
 }

@@ -8,7 +8,7 @@ import { ParsedArguments } from '../interfaces';
 const keyMap = {
 	start: (val: string, key: string) => numConvert(val, key),
 	finish: (val: string, key: string) => numConvert(val, key),
-	specifc: (val: string, key: string) => commaSplit(val, key),
+	specific: (val: string, key: string) => commaSplit(val, key),
 	scope: (val: string, key: string) => numConvert(val, key),
 	throttle: (val: string, key: string) => numConvert(val, key),
 	batchidx: (val: string, key: string) => numConvert(val, key),

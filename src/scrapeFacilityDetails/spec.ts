@@ -232,7 +232,7 @@ test('scrapeFacilityDetails: End to end deepequals test of failed scrape', async
         total_from_last_scrape: 46,
 		total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
-        hit_alert_page_on_facility_scrape_attempt: [87555],
+        facility_timeout_or_alert_page: [87555],
     };
     const range = [1,2,3,4,5];
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);
@@ -251,7 +251,7 @@ test('scrapeFacilityDetails: End to end deepequals test of successful scrape', a
         total_from_last_scrape: 46,
 		total_in_database: 300,
         facility_scraped_deficencies_rejected: [85000, 86500],
-        hit_alert_page_on_facility_scrape_attempt: [87555],
+        facility_timeout_or_alert_page: [87555],
     };
     const range = [1,2,3,4,5];
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, range);

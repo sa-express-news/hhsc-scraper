@@ -29,6 +29,7 @@ export default async (id: number, browser: Browser, attemptedIDsHandler: Attempt
 	attemptedIDsHandler.newAttempt(id);
 
 	const facilityResponse: FacilityResponse = await scrapeFacilityDetails(id, attemptedIDsHandler, logger).catch((err: any) => handleError(err, logger));
+	// only look for deficencies if a facility was found
 	if (facilityResponse.isSuccessful) {
 		logger.info(`Found facility at: ${id}`);
 		const deficiencyResponse: DeficiencyResponse = await scrapeDeficiencyDetails(id, browser, logger);

@@ -2,14 +2,14 @@ import * as _ from 'lodash';
 
 // interfaces
 import { 
-	ParsedArgumentsPayload,
-	AttemptedIDs,
-	IDRange
+    ParsedArgumentsPayload,
+    AttemptedIDs,
+    IDRange
 } from '../interfaces';
 
 const defaultPayload: IDRange = {
-	range: [],
-	throttle: null,
+    range: [],
+    throttle: null,
 };
 
 export const getThrottle = (payload: ParsedArgumentsPayload, defaultThrottle: number) => payload.throttle ? payload.throttle : defaultThrottle;
@@ -38,8 +38,8 @@ export default (payload: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, def
 	// if an array of specific IDs was passed to the scraper, just return that
 	if (payload.specific) {
 		return {
-			range: payload.specific,
-			throttle,
+            range: payload.specific,
+            throttle,
 		}
 	}
 
@@ -47,14 +47,14 @@ export default (payload: ParsedArgumentsPayload, attemptedIDs: AttemptedIDs, def
 	if (payload.start) {
 		const finish: number = getFinish(payload, scope);
 		return {
-			range: spreadRange(payload.start, finish),
-			throttle,
+            range: spreadRange(payload.start, finish),
+            throttle,
 		}
 	}
 
 	// if running the scraper w/ specific ranges, use the attemptedIDs log to figure out where to start scraping
 	return {
-		range: buildRange(attemptedIDs, scope),
-		throttle,
+        range: buildRange(attemptedIDs, scope),
+        throttle,
 	}
 }

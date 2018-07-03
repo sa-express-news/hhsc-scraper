@@ -1,14 +1,14 @@
 // interfaces
 import { 
-	OperationHash,
-	AttemptedIDs,
-	AttemptedIDHandlerInstance
-} 								from '../interfaces';
-import { Browser } 				from 'puppeteer';
-import { Logger }				from 'winston';
+    OperationHash,
+    AttemptedIDs,
+    AttemptedIDHandlerInstance
+}                               from '../interfaces';
+import { Browser }              from 'puppeteer';
+import { Logger }               from 'winston';
 
 // modules
-import scrapeOperation		from '../scrapeOperation';
+import scrapeOperation from '../scrapeOperation';
 
 export const flattenArray = (batch: Array<Array<OperationHash>>) => ([] as Array<OperationHash>).concat(...batch);
 
@@ -52,12 +52,12 @@ export default async (range: Array<number>, throttle: number, browser: Browser, 
 
 	// the while loop is used to batch requests to the HHSC server
 	while (pointer < range.length) {
-		logger.info(`Next range: ${range[pointer]} to ${range[pointer] + throttle}`);
-		current = await updateCurrent(range, pointer, throttle, browser, attemptedIDsHandler, logger).catch((err) => handleError(err, logger));
-		logger.info(`Finished ${range[pointer]} to ${range[pointer] + throttle} with ${current.length} responses`);
+	    logger.info(`Next range: ${range[pointer]} to ${range[pointer] + throttle}`);
+	    current = await updateCurrent(range, pointer, throttle, browser, attemptedIDsHandler, logger).catch((err) => handleError(err, logger));
+	    logger.info(`Finished ${range[pointer]} to ${range[pointer] + throttle} with ${current.length} responses`);
 
-		operations = operations.concat(current);
-		pointer += throttle;
+	    operations = operations.concat(current);
+	    pointer += throttle;
 	}
 	
 	return operations;

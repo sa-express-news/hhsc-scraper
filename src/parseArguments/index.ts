@@ -6,22 +6,22 @@ import { ParsedArguments } from '../interfaces';
 // this hash maps each argument key to a function
 // that should be applied to the corresponding value
 const keyMap = {
-	start: (val: string, key: string) => numConvert(val, key),
-	finish: (val: string, key: string) => numConvert(val, key),
-	specific: (val: string, key: string) => commaSplit(val, key),
-	scope: (val: string, key: string) => numConvert(val, key),
-	throttle: (val: string, key: string) => numConvert(val, key),
-	batchidx: (val: string, key: string) => numConvert(val, key),
+    start: (val: string, key: string) => numConvert(val, key),
+    finish: (val: string, key: string) => numConvert(val, key),
+    specific: (val: string, key: string) => commaSplit(val, key),
+    scope: (val: string, key: string) => numConvert(val, key),
+    throttle: (val: string, key: string) => numConvert(val, key),
+    batchidx: (val: string, key: string) => numConvert(val, key),
 };
 
 export const numConvert = (val: string, key: string) => {
-	const num = parseInt(val.replace(/,/g, ''), 10);
-	if (!Number.isInteger(num)) {
-		console.error(`Value for ${key} is not an integer`);
-		return 'err';
-	} else {
-		return num;
-	}
+    const num = parseInt(val.replace(/,/g, ''), 10);
+    if (!Number.isInteger(num)) {
+        console.error(`Value for ${key} is not an integer`);
+        return 'err';
+    } else {
+        return num;
+    }
 };
 
 // returns and array split on the commas and converted to number

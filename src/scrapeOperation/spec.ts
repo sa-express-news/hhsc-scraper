@@ -66,9 +66,9 @@ const operation = {
 
 test('mergeResponses: if both requests were successfull, array of decifiencies should be returned with facility hash merged into each', t => {
 	const deficiencyResponse = [
-			deficiency,
-			deficiency,
-			deficiency,
+        deficiency,
+        deficiency,
+        deficiency,
 	];
 
 	let result = mergeResponses(deficiencyResponse, facility);

@@ -1,7 +1,7 @@
 // this is what the parseArguments model returns
 export interface ParsedArgumentsPayload {
-	start?: number;
-	finish?: number;
+    start?: number;
+    finish?: number;
     specific?: Array<number>;
     scope?: number;
     throttle?: number;
@@ -9,8 +9,8 @@ export interface ParsedArgumentsPayload {
 };
 
 export interface ParsedArguments {
-	isSuccessful: boolean;
-	payload: ParsedArgumentsPayload;
+    isSuccessful: boolean;
+    payload: ParsedArgumentsPayload;
 };
 
 // used to group attempts made and those failed for suspicious reasons
@@ -47,14 +47,14 @@ export interface IDsPaths {
 
 // range of IDs for the scraper to explore
 export interface IDRange {
-	range: Array<number>;
+    range: Array<number>;
     throttle: number; 
 }
 
 // columns for the facility details page
 export interface FacilityHash {
-	operation_id: number;
-	operation_number: string;
+    operation_id: number;
+    operation_number: string;
     operation_type: string;
     operation_name: string;
     location_address: string;
@@ -74,8 +74,8 @@ export interface FacilityHash {
 }
 
 export interface FacilityResponse {
-	isSuccessful: boolean;
-	payload?: FacilityHash;
+    isSuccessful: boolean;
+    payload?: FacilityHash;
 }
 
 // columns plucked from the popup on the deficency page
@@ -86,7 +86,7 @@ export interface DeficencyPopUpHash {
 
 // columns from the operation deficiencies page
 export interface DeficiencyHash extends DeficencyPopUpHash {
-	activity_date: string;
+    activity_date: string;
     standard_number_description: string;
     activity_type: string;
     standard_risk_level: string;
@@ -96,8 +96,8 @@ export interface DeficiencyHash extends DeficencyPopUpHash {
 }
 
 export interface DeficiencyResponse {
-	isSuccessful: boolean;
-	payload?: Array<DeficiencyHash>;
+    isSuccessful: boolean;
+    payload?: Array<DeficiencyHash>;
 }
 
 // a row of operation data
@@ -110,14 +110,14 @@ export interface UniqOperationHash extends OperationHash {
 
 // key map used for building a facilityHash
 export interface FacilityHashMapUtils {
-	sel: string;
-	func: Function;
+    sel: string;
+    func: Function;
 }
 
 // used for mapping response values through FacilityHashMapUtils to FacilityHash
 export interface FacilityHashMap {
-	operation_id: FacilityHashMapUtils;
-	operation_number: FacilityHashMapUtils;
+    operation_id: FacilityHashMapUtils;
+    operation_number: FacilityHashMapUtils;
     operation_type: FacilityHashMapUtils;
     operation_name: FacilityHashMapUtils;
     location_address: FacilityHashMapUtils;

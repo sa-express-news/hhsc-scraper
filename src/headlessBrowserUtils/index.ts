@@ -1,7 +1,7 @@
 // interfaces
 import { Browser, Page, ElementHandle } from 'puppeteer';
-import { Logger } 						from 'winston';
-import { AttemptedIDHandlerInstance } 	from '../interfaces';
+import { Logger }                       from 'winston';
+import { AttemptedIDHandlerInstance }   from '../interfaces';
 
 // modules
 import handleClickEvent from '../handleClickEvent';

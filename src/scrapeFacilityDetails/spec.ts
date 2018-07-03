@@ -12,9 +12,9 @@ import scrapeFacilityDetails, {
 	getDate,
 } from './index';
 
-import requestFacilityDetailsPage 	from '../requestFacilityDetailsPage';
-import AttemptedIDsHandler			from '../AttemptedIDsHandler';
-import logger						from '../logger';
+import requestFacilityDetailsPage   from '../requestFacilityDetailsPage';
+import AttemptedIDsHandler          from '../AttemptedIDsHandler';
+import logger                       from '../logger';
 
 test('getKey, getNumDeficiencies and isTargetFacility should check to see if GRO is a valid facility to scrape', async t => {
 	const $ 				= await requestFacilityDetailsPage(111812, logger());

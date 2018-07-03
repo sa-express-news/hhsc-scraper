@@ -33,8 +33,8 @@ test('spreadRange should take two sequential numbers and spread them into iterat
 
 test('buildRange should figure out start point and remining spaces from attemptedIDs and then tack remaining scope on to build the full range', t => {
 	const attemptedIDs = {
-		last_successful: 1000,
-	    last_attempted: 1500,
+        last_successful: 1000,
+        last_attempted: 1500,
 	    total_from_last_scrape: 46,
         total_in_database: 300,
 	    facility_scraped_deficencies_rejected: [256, 400, 836],

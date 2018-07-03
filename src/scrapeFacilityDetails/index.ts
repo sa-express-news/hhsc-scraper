@@ -5,16 +5,16 @@ import {
 	FacilityHash,
 	FacilityHashMap,
 	AttemptedIDHandlerInstance
-} 								from '../interfaces';
-import { Logger } 				from 'winston';									
+}                                   from '../interfaces';
+import { Logger }                   from 'winston';									
 
 // returned when there's nothing cooking
 const failedScrape = () => ({ isSuccessful: false });
 
 // All of these should be overwritten
 const defaultPayload = () => ({
-	operation_id: null,
-	operation_number: 'None',
+    operation_id: null,
+    operation_number: 'None',
     operation_type: 'None',
     operation_name: 'None',
     programs_provided: 'None',

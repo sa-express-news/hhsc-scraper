@@ -2,16 +2,16 @@ import * as test from 'tape';
 import * as puppeteer from 'puppeteer';
 
 import scrapeDefiencyDetails, { 
-	getURL,
-	getIncident,
-	scrapeNarrativePopups,
-	parseNarrativeResponse,
+    getURL,
+    getIncident,
+    scrapeNarrativePopups,
+    parseNarrativeResponse,
 } from './index';
 import {
-	getDeficencyPage,
-	getDeficenciesRow,
-	isNextButton,
-	clickNextButton,
+    getDeficencyPage,
+    getDeficenciesRow,
+    isNextButton,
+    clickNextButton,
 } from '../headlessBrowserUtils';
 import logger from '../logger';
 

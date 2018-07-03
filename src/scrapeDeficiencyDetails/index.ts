@@ -5,9 +5,9 @@ import {
 	DeficiencyHash,
 	DeficencyPopUpHash,
 	DeficencyHashMap,
-} 												from '../interfaces';
+}                                               from '../interfaces';
 import { Browser, Page, ElementHandle, Dialog } from 'puppeteer';
-import { Logger }								from 'winston';
+import { Logger }                               from 'winston';
 
 // modules
 import { 
@@ -34,7 +34,7 @@ const handleNarrativeError = (err: any, logger: Logger) => {
 }
 
 const defaultPayload = () => ({
-	activity_date: 'None',
+    activity_date: 'None',
     standard_number_description: 'None',
     activity_type: 'None',
     standard_risk_level: 'None',
@@ -46,40 +46,15 @@ const defaultPayload = () => ({
 });
 
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
-	activity_date: {
-		func: getDate,
-		cellsIdx: 0,
-	},
-    standard_number_description: {
-		func: getString,
-		cellsIdx: 1,
-	},
-    activity_type: {
-		func: getString,
-		cellsIdx: 2,
-	},
-    standard_risk_level: {
-		func: getString,
-		cellsIdx: 3,
-	},
-    corrected_at_inspection: {
-		func: getBoolean,
-		cellsIdx: 4,
-	},
-    corrected_date: {
-		func: getDate,
-		cellsIdx: 5,
-	},
-    date_correction_verified: {
-		func: getDate,
-		cellsIdx: 6,
-	},
-	technical_assistance_given: {
-		func: () => popupContent.technical_assistance_given,
-	},
-	narrative: {
-		func: () => popupContent.narrative,
-	},
+    activity_date: { func: getDate, cellsIdx: 0 },
+    standard_number_description: { func: getString, cellsIdx: 1 },
+    activity_type: { func: getString, cellsIdx: 2 },
+    standard_risk_level: { func: getString, cellsIdx: 3 },
+    corrected_at_inspection: { func: getBoolean, cellsIdx: 4 },
+    corrected_date: { func: getDate, cellsIdx: 5 },
+    date_correction_verified: { func: getDate, cellsIdx: 6 },
+    technical_assistance_given: { func: () => popupContent.technical_assistance_given },
+    narrative: { func: () => popupContent.narrative },
 });
 
 export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;

@@ -7,7 +7,7 @@ import createLogger                                                        from 
 import AttemptedIDsHandler                                                 from '../AttemptedIDsHandler';
 
 const operation = {
-	activity_date: 'this is a string',
+    activity_date: 'this is a string',
     standard_number_description: 'this is a string',
     activity_type: 'this is a string',
     standard_risk_level: 'this is a string',
@@ -17,7 +17,7 @@ const operation = {
     technical_assistance_given: null,
     narrative: 'this is a string',
     operation_id: 873652,
-	operation_number: 'facility string',
+    operation_number: 'facility string',
     operation_type: 'facility string',
     operation_name: 'facility string',
     location_address: 'facility string',

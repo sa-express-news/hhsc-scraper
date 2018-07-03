@@ -9,6 +9,6 @@ do
 	x=$(( $x - 1 ))
 	npm run scraper batchidx=$((batch-x))
 	# give data.world time to ingest the new data
-    sleep 90s
-    echo "Batch complete, there are $x to go"
+	sleep 90s
+	echo "Batch complete, there are $x to go"
 done

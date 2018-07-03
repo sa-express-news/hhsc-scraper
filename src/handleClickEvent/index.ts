@@ -9,8 +9,8 @@ class HandleClickEvent {
 	public promise: any;
 
 	constructor(page: Page, url: string, clicker: Function, logger: Logger) {
-		this.promise 	= this.setPromise(page, url, clicker);
-		this.logger		= logger;
+		this.promise    = this.setPromise(page, url, clicker);
+		this.logger	    = logger;
 
 	}
 

@@ -12,12 +12,12 @@ class AttemptedIDsHandler implements AttemptedIDHandlerInstance {
 	private rejectedFacilities: Array<number>;
 
 	constructor(attemptedIDs: AttemptedIDs, range: Array<number>) {
-		this.lastSuccessful 		= attemptedIDs.last_successful;
-		this.lastAttempted 			= attemptedIDs.last_successful;
-		this.totalLastScrape		= attemptedIDs.total_from_last_scrape;
-		this.totalInDB				= attemptedIDs.total_in_database;
-		this.rejectedDeficencies 	= this.findUnattemptedIDs(attemptedIDs.facility_scraped_deficencies_rejected, range);
-		this.rejectedFacilities 	= this.findUnattemptedIDs(attemptedIDs.facility_timeout_or_alert_page, range);
+		this.lastSuccessful         = attemptedIDs.last_successful;
+		this.lastAttempted          = attemptedIDs.last_successful;
+		this.totalLastScrape        = attemptedIDs.total_from_last_scrape;
+		this.totalInDB	            = attemptedIDs.total_in_database;
+		this.rejectedDeficencies    = this.findUnattemptedIDs(attemptedIDs.facility_scraped_deficencies_rejected, range);
+		this.rejectedFacilities     = this.findUnattemptedIDs(attemptedIDs.facility_timeout_or_alert_page, range);
 	}
 
 	private findUnattemptedIDs(previouslyRejected: Array<number>, range: Array<number>) {

@@ -4,26 +4,26 @@ import * as puppeteer from 'puppeteer';
 
 // interfaces
 import { 
-	ParsedArguments,
-	AttemptedIDs,
-	IDRange,
-	AttemptedIDHandlerInstance,
-	OperationHash,
-	UniqOperationHash,
-} 					from './interfaces';
-import { Browser } 	from 'puppeteer';
-import { Logger } 	from 'winston';
+    ParsedArguments,
+    AttemptedIDs,
+    IDRange,
+    AttemptedIDHandlerInstance,
+    OperationHash,
+    UniqOperationHash,
+}                                from './interfaces';
+import { Browser }               from 'puppeteer';
+import { Logger }                from 'winston';
 
 // modules
-import createLogger						from './logger';
-import parseArguments 					from './parseArguments';
-import pullFromServer					from './pullFromServer';
-import getIDRange 						from './getIDRange';
-import AttemptedIDsHandler				from './AttemptedIDsHandler';
-import batchRequestsAndManageResponses	from './batchRequestsAndManageResponses';
-import addUniqueID						from './addUniqueID';
-import mergeDataToMaster				from './mergeDataToMaster';
-import pushToServer						from './pushToServer';
+import createLogger                     from './logger';
+import parseArguments                   from './parseArguments';
+import pullFromServer                   from './pullFromServer';
+import getIDRange                       from './getIDRange';
+import AttemptedIDsHandler              from './AttemptedIDsHandler';
+import batchRequestsAndManageResponses  from './batchRequestsAndManageResponses';
+import addUniqueID                      from './addUniqueID';
+import mergeDataToMaster                from './mergeDataToMaster';
+import pushToServer                     from './pushToServer';
 
 // Number of IDs to try and pluck with each scrape
 const defaultScope: number = 10000;
@@ -38,10 +38,10 @@ const handleError = (err: any, attemptedIDs: AttemptedIDs, logger: Logger) => {
 
 const runScraper = async () => {
 	// create the error logger, parse possible arguments, grab data already in DB and attemptedIDs JSON log
-	const logger: Logger 							= createLogger();
-	const parsedArguments: ParsedArguments 			= parseArguments(process.argv.slice(2));
-	const existingData: Array<UniqOperationHash> 	= await pullFromServer.getOperations(logger).catch(() => null);
-	const prevAttemptedIDs: AttemptedIDs			= await pullFromServer.getAttemptedIDs(logger).catch(() => null);
+	const logger: Logger                            = createLogger();
+	const parsedArguments: ParsedArguments          = parseArguments(process.argv.slice(2));
+	const existingData: Array<UniqOperationHash>    = await pullFromServer.getOperations(logger).catch(() => null);
+	const prevAttemptedIDs: AttemptedIDs            = await pullFromServer.getAttemptedIDs(logger).catch(() => null);
 
 	if (parsedArguments.isSuccessful && existingData && prevAttemptedIDs) {
 		// Fire up a headless browser

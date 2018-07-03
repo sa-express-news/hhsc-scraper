@@ -7,13 +7,13 @@ import {
 	DeficiencyHash,
 	DeficiencyResponse,
 	AttemptedIDHandlerInstance
-} 								from '../interfaces';
-import { Browser } 				from 'puppeteer';
-import { Logger }				from 'winston';
+}                               from '../interfaces';
+import { Browser }              from 'puppeteer';
+import { Logger }               from 'winston';
 
 // models
-import scrapeFacilityDetails 	from '../scrapeFacilityDetails';
-import scrapeDeficiencyDetails 	from '../scrapeDeficiencyDetails';
+import scrapeFacilityDetails    from '../scrapeFacilityDetails';
+import scrapeDeficiencyDetails  from '../scrapeDeficiencyDetails';
 
 const handleError = (err: any, logger: Logger) => {
 	logger.error(err)

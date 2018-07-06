@@ -3,6 +3,8 @@ import * as _         from 'lodash';
 import * as puppeteer from 'puppeteer';
 
 import batchRequestsAndManageResponses, { flattenArray, removeEmpties }    from './index';
+import { addIDs }                                                          from '../addUniqueID';
+import { removeDuplicates }                                                from '../mergeDataToMaster';
 import createLogger                                                        from '../logger';
 import AttemptedIDsHandler                                                 from '../AttemptedIDsHandler';
 
@@ -77,10 +79,11 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
     };
     const attemptedIDsHandler = new AttemptedIDsHandler(attemptedIDs, _.range(94080, 94093));
     
-    const operations = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDsHandler, logger);
+    const operationsRaw = await batchRequestsAndManageResponses(_.range(94080, 94093), 10, browser, attemptedIDsHandler, logger);
+    const operations = removeDuplicates(addIDs(operationsRaw, 0));
 
     let lenResult = operations.length;
-    let lenExpected = 50;
+    let lenExpected = 51;
     t.equal(lenResult, lenExpected);
 
     let strResult = operations[operations.length - 1].narrative;

@@ -6,14 +6,16 @@ import scrapeDefiencyDetails, {
     getIncident,
     scrapeNarrativePopups,
     parseNarrativeResponse,
-} from './index';
+} 								from './index';
 import {
     getDeficencyPage,
     getDeficenciesRow,
     isNextButton,
     clickNextButton,
-} from '../headlessBrowserUtils';
-import logger from '../logger';
+} 								from '../headlessBrowserUtils';
+import logger 					from '../logger';
+import { addIDs }               from '../addUniqueID';
+import { removeDuplicates }     from '../mergeDataToMaster';
 
 const runTests = async () => {
 	const debugOpts = { headless: false, slowMo: 250 };
@@ -109,18 +111,18 @@ const runTests = async () => {
 
 	test('scrapeDefiencyDetails: Should grab all possible deficiencies and return array of hashes under payload with isSuccessful: true', async t => {
 		const response = await scrapeDefiencyDetails(272125, browser, logger());
-		const deficiencies = response.payload;
+		const deficiencies = removeDuplicates(addIDs(response.payload, 0));
 		
 		let resultFirstDeficency = deficiencies[0].narrative
-		let expectedFirstDeficiency = 'A fire inspection was not provided by the operation.';
+		let expectedFirstDeficiency = 'A fire inspection was not provided by the operation after being.';
 		t.equal(resultFirstDeficency, expectedFirstDeficiency);
 
 		let resultLastDeficency = deficiencies[deficiencies.length - 1].narrative;
-		let expectedLastDeficiency = 'A fire inspection was not provided by the operation.';
-		t.equal(resultFirstDeficency, expectedFirstDeficiency);
+		let expectedLastDeficiency = 'There was no documentation of therapeutic recreational activities provided for a child during the month of March, 2015.';
+		t.equal(resultLastDeficency, expectedLastDeficiency);
 
 		let resultLen = deficiencies.length;
-		let expectedLen = 63
+		let expectedLen = 64
 		t.equal(resultLen, expectedLen);
 
 		t.end();

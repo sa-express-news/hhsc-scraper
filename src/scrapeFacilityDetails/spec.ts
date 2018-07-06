@@ -10,6 +10,8 @@ import scrapeFacilityDetails, {
 	getPrograms,
 	getAddress,
 	getDate,
+	isCPA,
+	isGRO,
 } from './index';
 
 import requestFacilityDetailsPage   from '../requestFacilityDetailsPage';
@@ -21,7 +23,7 @@ test('getKey, getNumDeficiencies and isTargetFacility should check to see if GRO
 	const operationType 	= getOperationType($);
 	const numDeficiencies 	= getNumDeficiencies(111812, $);
 
-	let boolResult = operationType === 'General Residential Operation';
+	let boolResult = isGRO('Happy time:General Residential Operation');
 	let boolExpectation = true;
 	t.equal(boolResult, boolExpectation);
 
@@ -39,7 +41,7 @@ test('getKey, getNumDeficiencies and isTargetFacility should check to see if CPA
 	const operationType 	= getOperationType($);
 	const numDeficiencies 	= getNumDeficiencies(1229119, $);
 
-	let boolResult = operationType === 'Child Placing Agency-Adoption Services';
+	let boolResult = isCPA('Child Placing Agency-Fizz Books');
 	let boolExpectation = true;
 	t.equal(boolResult, boolExpectation);
 

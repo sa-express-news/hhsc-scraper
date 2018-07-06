@@ -34,11 +34,11 @@ const defaultPayload = () => ({
 });
 
 export const isCPA = (operationType: string) => {
-	return operationType === 'Child Placing Agency-Adoption Services';
+	return operationType.indexOf('Child Placing Agency') !== -1;
 };
 
 export const isGRO = (operationType: string) => {
-	return operationType === 'General Residential Operation';
+	return operationType.indexOf('General Residential Operation') !== -1;
 };
 
 // occasionally, the HHSC website will redirect our request to a login page, if this happens, bail and log the ID for a future attempt

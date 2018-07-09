@@ -1,18 +1,22 @@
 # What is this?
 
-Texas Health and Human Services is responsible for compiling data on TXDPS "non-compliance" cases at Child Placing Agencies and Residential Treatment Centers for foster children. (An operation can be considered out of compliance for a wide range of violations - from expired fire extinguishers to sexual abuse of foster children.) They provide this data publically on the TX open data portal. Unfortunately, the provided data is incomplete. Specifically, it doesn't record data from Child Placing Agency branch offices (only the main branch). Thus, this scraper exists to generate a more thorough dataset of TX non-compliance cases.
+Texas Health and Human Services is responsible for compiling data on Texas DFPS "non-compliance" cases at child placing agencies and residential treatment centers for foster children. An operation can be considered out of compliance for a wide range of violations - from expired fire extinguishers to sexual abuse of foster children.
+
+HHSC provides this data publically on the TX open data portal. Unfortunately, this provided dataset is incomplete. Specifically, it doesn't record data from child placing agency branch facilities (only their main facility). Thus, this scraper exists to generate a more thorough dataset of TX non-compliance cases.
 
 # How does it work?
 
-The operations responsible for caring for and managing foster children in Texas – Child Placing Agencies, etc – are all assigned an operation ID by DFPS. It appears that IDs are assigned sequentially, however, there is no logical pattern that allows us to infer under which numbers IDs exist. For example, operations may be assigned IDs under the numbers 50003, 50004 and 50005 followed by a seemingly arbitrary gap in assignment that resumes 2,000 sequential numbers later at 52003. What we do know is that, as of this writing, all IDs lie between the numbers 50,000 and 1,400,000.
+The operations responsible for caring for and managing foster children in Texas – child placing agencies, etc – are all assigned an operation ID by DFPS. It appears that IDs are assigned sequentially, however, there is no logical pattern that allows us to infer under which numbers IDs exist. For example, operations may be assigned IDs under the numbers 50003, 50004 and 50005 followed by a seemingly arbitrary gap in assignment that resumes 2,000 sequential numbers later at 52003. What we do know is that, as of this writing, all IDs lie between the numbers 50,000 and 1,400,000.
 
 This scraper works by attempting to visit the ["Operation Details" pages](http://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/ppFacilityDetails.asp?ptype=RC&fid=294151) for each possible ID you ask it to investigate. When a facility is found, if it has been cited for non-compliance cases, its details are scraped from this page. Afterwards, the facility's [compliance history page](http://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=294151&tab=2) is opened and each non-compliance case is scraped from the table.
 
-All cases are aggregated into a `.csv` file with the name "hhsc-deficency-data". This file is saved to disc and pushed to the Express-News account on [data.world](https://data.world/). Before beginning the scrape, if an existing "hhsc-deficency-data" file exists on data.world, it is pulled from the sever and the newly scraped cases are added to the existing spreadsheet before being pushed back to the server. Another file titled "hhsc-deficency-data-backup", which is just a copy of "hhsc-deficency-data" in it's state prior to the current scrape is also pushed to the server and saved to disc to protect existing data in case something went wrong. If the shell script, `run.sh`, is used to make multiple scrapes at a time, each version will be saved to disc in the `temp` directory.
+All non compliance cases are aggregated into a `.csv` file with the name "hhsc-deficency-data". One row represents one case and includes case-specific and facility-specific columns. This file is saved to disc and pushed to the Express-News account on [data.world](https://data.world/). Before beginning the scrape, if an existing "hhsc-deficency-data" file exists on data.world, it is pulled from the sever and the newly scraped cases are added to the existing spreadsheet before being pushed back to the server. 
+
+Another file titled "hhsc-deficency-data-backup", which is just a copy of "hhsc-deficency-data" in it's state prior to the current scrape, is also pushed to the server and saved to disc to protect existing data in case something went wrong. If the shell script, `run.sh`, is used to make multiple scrapes at a time, each version will also be saved to disc in the `temp` directory.
 
 # In what format is the data saved?
 
-Here is a data dictionary describing the format of the "hhsc-deficency-data" `csv` file:
+Here is a data dictionary describing the format of each row in the "hhsc-deficency-data" `csv` file:
 
 ### Facility specific columns
 
@@ -54,46 +58,54 @@ Here is a data dictionary describing the format of the "hhsc-deficency-data" `cs
 
  1. Clone the repo: `git clone https://github.com/sa-express-news/hhsc-scraper.git`
  2. Install the dependencies: `npm run install`
- 3. Configure the data.world API connection
-   1. Create a dataset in data.world
-   2. Open `src/pushToServer` and `src/pullFromServer` and configure the API URL's to match your paths
-   3. Grab you API key from data.world and save it to a `.env` file in the repo's root
+ 3. Configure the data.world API connection (members of the Express News data.world team only need to complete step three, configuring `.env`):
+    1. Create a dataset in data.world
+    2. Open `src/pushToServer` and `src/pullFromServer` and configure the API URL's to match your paths
+    3. Grab you API key from data.world and save it to a `.env` file in the repo's root
  4. Run `npm run test` to check if everything is working. Note that a couple end to end tests may fail if a facility has accrued more deficencies since the test was written. You might need to update or ignore accordingly. All tests are saved under `spec.ts` in their respective directories
  5. Run `tsc` to compile the TypeScript.
 
 ## Running a single scrape
 
-The scraper can be run with the command `npm run scraper`. If no options are passed, this command will grab the `attempted-ids.json` file from the server, figure out the last scraped ID from that list and then begin scraping IDs sequentially starting at the next possible ID above the last attempted ID. It will attempt to scrape 10,000 sequential possible IDs before shutting down again.
+The scraper can be run with the command `npm run scraper`. If no options are passed, this command will grab the `attempted-ids.json` file (details on this below) from the server, figure out the last scraped ID from that list and then begin scraping IDs sequentially starting at the next possible ID above the last attempted ID. It will attempt to scrape 10,000 sequential possible IDs before shutting down again.
 
 ### Scraper options
 
- - `throttle`: This is the number of IDs to attempt simultaneously. The default is 10. Keep in mind that the HHSC website is extremely buggy and attempting too many IDs at once can lead to errors, which will be logged in `errors.log`.
- - `scope`: This is the number of IDs to attempt in this scrape from the starting ID. For example if `start` is set to 10 and `scope` is set to `1000`, The attempted IDs will be 10-1009. Will be ignored if `finished` is passed. Default is 10,000.
+All of these are optional.
+
+ - `throttle`: This is the number of IDs to attempt simultaneously. The default is 10. Keep in mind that the HHSC website is extremely buggy and attempting too many IDs at once can lead to errors, which will be logged in `logs/errors.log`.
+ - `scope`: This is the number of IDs to attempt in this scrape from the starting ID. For example if `start` is set to 10 and `scope` is set to `1000`, the attempted IDs will be 10-1009. This option will be ignored if `finished` is passed. Default is 10,000.
  - `start`: The ID number to start the scrape at.
  - `finish`: The ID number to stop the scrape at.
  - `specific`: This is a list of comma-separated IDs that, if specified, will be the only IDs the scraper attempts to scrape.
 
 ## Running `run.sh`
 
-`run.sh` allows you to set the scraper to make many attempt scrapes in a row, saving the results to the `temp` directory under sequential file names to back them up. If you open the file, the `batch` variable can be modified to specify the number of times you want to run the scraper. To make a full scrape, make sure `attempted-ids.json` is not reporting anything above 50,000 under `last_attempted`, set the batch variable to 135 and then let her go for it. This should take between 24 and 48 hours to complete.
+`run.sh` allows you to set the scraper to make many scrapes in a row, saving the results to the `temp` directory under sequential file names to back them up. If you open the file, the `batch` variable can be modified to specify the number of times you want to run the scraper. 
+
+To make a full scrape, make sure `attempted-ids.json` is not reporting anything above 50,000 under `last_attempted`, set the batch variable to 135 and then let 'er rip. This should take between 24 and 48 hours to complete.
 
 ## Understanding `attempted-ids.json`
 
 `attempted-ids.json` is a log file that keeps track of what you've been doing with the scraper over time. If the scraper is run without a specific `start` ID, it will also be used to configure what ID to pick up where it left off from (if this is the first time you have run the scraper, it will start at 50,000). The file is saved in the data.world dataset and locally to the `logs` directory. It has the following properties:
 
- - `last_successful` <`number`>: The last ID under which a facility was found and successfully scraper
+ - `last_successful` <`number`>: The last ID under which a facility was found and successfully scraped
  - `last_attempted` <`number`>: The last attempted ID. Will be used by the scraper on restart to pick up where it left off
  - `total_from_last_scrape` <`number`>: How many non-compliance cases were found in the last scrape
  - `total_in_database` <`number`>: How many rows are in the current iteration of "hhsc-deficency-data"
- - `facility_scraped_deficencies_rejected` <`Array<number>`>: If an ID was found at a facility page but something went wrong trying to scrape the corresponding deficency page, the facility ID will be saved to this array and reattempted next time the scraper starts up.
- - `facility_timeout_or_alert_page` <`Array<number>`>: If we found a page at this possible ID but couldn't scrape the facility details again, save the ID to this array and attempt it again at the next scrape.
+ - `facility_scraped_deficencies_rejected` <`Array<number>`>: If an ID was found at a facility page but something went wrong trying to scrape the corresponding deficency page, the facility ID will be saved to this array and reattempted next time the scraper starts up
+ - `facility_timeout_or_alert_page` <`Array<number>`>: If we found what looked like a facility page at this possible ID but couldn't scrape the facility details, the ID is saved to this array and attempted again at the next scrape
 
 # Technical details
 
-The scraper is written in TypeScript. All source code is in the `src` directory with modules separated in sub-directories therein. Each module has a `spec.ts` file which includes the unit tests, written with `tape`.
+The scraper is written in TypeScript. All source code is in the `src` directory with modules separated in sub-directories therein. Each module has a `spec.ts` file which includes the unit tests, written with Tape.
 
-The facility pages are requested using Request Promise and scraped using Cheerio. The deficency pages are complex to navigate and loaded with JavaScript. Thus, they are scraped with Google's Headless Chromium browser coupled with the Puppeteer library. Deficency page scrapes are only attempted when a facility is found and successfully scraped, thus minimizing usage of the less efficent headless browser.
+The facility pages are requested using Request Promise and scraped using Cheerio. The deficency pages are complex to navigate and filled with JavaScript. Thus, they are scraped with Google's Headless Chromium browser coupled with the Puppeteer library. Deficency page scrapes are only attempted when a facility is found and successfully scraped, thus minimizing usage of the less efficent headless browser approach.
 
-Winston is used for error handling and logging and Data Dot World, via their API, is used as a database, allowing us to push updates in JSON format but query them in SQL via the SQL tool on their platform.
+Winston is used for error handling and logging. 
+
+[data.world](https://data.world/), via their API, is used as a database, allowing us to push updates in JSON format but query them in SQL via the SQL tool on their platform.
+
+If you'd like to use this scraper external from data.world, this could be done by rewriting `src/pullFromServer` and `src/pushToServer` to suit your needs. Both of those modules accept arrays of objects as their input arguments which you could then handle as needed.
 
 Contact `lwhyte` AT `express-news.net` for more details.

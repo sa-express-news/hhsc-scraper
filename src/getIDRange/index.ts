@@ -23,7 +23,7 @@ export const spreadRange = (start: number, finish: number) => _.range(start, fin
 export const stackFailedAttempts = (attemptedIds: AttemptedIDs) => attemptedIds.facility_scraped_deficencies_rejected.concat(attemptedIds.facility_timeout_or_alert_page);
 
 export const buildRange = (attemptedIds: AttemptedIDs, scope: number) => {
-	const start: number 				= attemptedIds.last_attempted + 1;
+	const start: number 				= attemptedIds.last_attempted > 49999 ? attemptedIds.last_attempted + 1 : 50000; // Minimum worth trying is 50,000
 	const toReattempt: Array<number> 	= stackFailedAttempts(attemptedIds);
 	const finish: number 				= start + (scope - toReattempt.length);
 	return toReattempt.concat(spreadRange(start, finish));

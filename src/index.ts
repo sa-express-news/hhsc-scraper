@@ -56,6 +56,7 @@ const runScraper = async () => {
 		const uniqOperations: Array<UniqOperationHash> = addUniqueID(operations, existingData);
 		// add the new data tp the previously scraped data
 		const master: Array<UniqOperationHash> = mergeDataToMaster(uniqOperations, existingData, attemptedIDsHandler);
+
 		// push the new data, the backup data and the attemptedIDs to the server
 		await pushToServer(master, existingData, parsedArguments.payload, attemptedIDsHandler.ejectHash(), logger);
 		await browser.close();

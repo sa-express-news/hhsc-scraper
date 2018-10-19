@@ -39,7 +39,7 @@ const runTests = async () => {
 		const incident = await getIncident(rows[0], page, getURL(1252288), logger());
 
 		let result = incident.narrative;
-		let expected = 'On 6/9/2018 the operation was out of ratio in three cottages. Staff were in training and not in the cottages.';
+		let expected = 'A child\\\\\\\'s medication log documented more dispensed medication given to the child than the actual amount of medication the child had.';
 		t.equal(result, expected);
 
 		await page.close();
@@ -77,7 +77,7 @@ const runTests = async () => {
 		}
 
 		let result = successfulClicks;
-		let expected = 3;
+		let expected = 2;
 		t.equal(result, expected);
 
 		await page.close();
@@ -100,7 +100,7 @@ const runTests = async () => {
 
 		let result = await scrapeNarrativePopups(rows[0], page, getURL(95732), logger());
 		let expected = {  
-			narrative: 'Child in care sustained an eyelid injury while parent was not within eyesight range preventing her from being able to intervene.',
+			narrative: 'Caregiver admitted to asking child to lay on ground and proceeded to put chair over the child\\\\\\\'s legs/feet to prevent child from running. Caregiver also admitted to slapping the top of child\\\\\\\'s hand one time while child was in the home.',
 			technical_assistance_given: true,
 		};
 		t.deepEqual(result, expected);
@@ -114,15 +114,15 @@ const runTests = async () => {
 		const deficiencies = removeDuplicates(addIDs(response.payload, 0));
 		
 		let resultFirstDeficency = deficiencies[0].narrative
-		let expectedFirstDeficiency = 'A fire inspection was not provided by the operation after being.';
+		let expectedFirstDeficiency = 'In one child\\\\\\\'s record review there was no preliminary service plan.';
 		t.equal(resultFirstDeficency, expectedFirstDeficiency);
 
 		let resultLastDeficency = deficiencies[deficiencies.length - 1].narrative;
-		let expectedLastDeficiency = 'There was no documentation of therapeutic recreational activities provided for a child during the month of March, 2015.';
+		let expectedLastDeficiency = 'This standard was assessed and determined to be deficient.';
 		t.equal(resultLastDeficency, expectedLastDeficiency);
 
 		let resultLen = deficiencies.length;
-		let expectedLen = 64
+		let expectedLen = 81
 		t.equal(resultLen, expectedLen);
 
 		t.end();

@@ -67,6 +67,8 @@ export interface FacilityHash {
     issuance_date: string;
     open_foster_homes: number;
     open_branch_offices: number;
+    num_admin_penalties: number;
+    is_main_branch: boolean;
     corrective_action: boolean;
     adverse_action: boolean;
     temporarily_closed: boolean;
@@ -114,6 +116,11 @@ export interface FacilityHashMapUtils {
     func: Function;
 }
 
+export interface NumPenaltiesUtils {
+    sel: Array<string>;
+    func: Function;
+}
+
 // used for mapping response values through FacilityHashMapUtils to FacilityHash
 export interface FacilityHashMap {
     operation_id: FacilityHashMapUtils;
@@ -128,8 +135,10 @@ export interface FacilityHashMap {
     programs_provided: FacilityHashMapUtils;
     type_of_issuance: FacilityHashMapUtils;
     issuance_date: FacilityHashMapUtils;
+    is_main_branch: FacilityHashMapUtils;
     open_foster_homes: FacilityHashMapUtils;
     open_branch_offices: FacilityHashMapUtils;
+    num_admin_penalties: NumPenaltiesUtils;
     corrective_action: FacilityHashMapUtils;
     adverse_action: FacilityHashMapUtils;
     temporarily_closed: FacilityHashMapUtils;

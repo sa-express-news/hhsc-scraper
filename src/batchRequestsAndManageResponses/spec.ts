@@ -31,7 +31,9 @@ const operation = {
     type_of_issuance: 'facility string',
     issuance_date: 'facility string',
     open_foster_homes: 873652,
+    is_main_branch: true,
     open_branch_offices: 873652,
+    num_admin_penalties: 1,
     corrective_action: true,
     adverse_action: true,
     temporarily_closed: true,
@@ -83,7 +85,7 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
     const operations = removeDuplicates(addIDs(operationsRaw, 0));
 
     let lenResult = operations.length;
-    let lenExpected = 51;
+    let lenExpected = 41;
     t.equal(lenResult, lenExpected);
 
     let strResult = operations[operations.length - 1].narrative;

@@ -27,6 +27,8 @@ const defaultPayload = () => ({
     issuance_date: 'None',
     open_foster_homes: null,
     open_branch_offices: null,
+    num_admin_penalties: null,
+    is_main_branch: null,
     corrective_action: null,
     adverse_action: null,
     temporarily_closed: null,
@@ -96,6 +98,21 @@ export const getDate = ($: CheerioSelector, sel: string) => {
 // if we know there's no GRO value in a column, just return 0 for that type
 export const getCPANumber = (operationType: string, $: CheerioSelector, sel: string) => isCPA(operationType) ? getNumber($, sel) : 0;
 
+// Admin Penalties are hard to sniff out as the markup around them changes a lot depending on the type of facility
+export const getAdminPenalties = ($: CheerioSelector, sel: Array<string>): any => {
+   return sel.map(getNumber.bind(null, $)).find((num: number) => num !== null);
+}
+
+// is the this a CPA and, if so, is this the main branch? (GROs will be listed as 'true')
+export const getIsMainBranch = (operationType: string, $: CheerioSelector, sel: string): boolean => {
+   if (!isCPA(operationType)) {
+       return true;
+   } else {
+       const str: string = getKey($, sel, 'td').text().trim();
+       return typeof str !== 'string' || str.length === 0;
+   }
+}
+
 // CPAs don't have this column on their facility pages so we handle the differently
 export const getPrograms = (operationType: string, $: CheerioSelector, sel: string) => isCPA(operationType) ? 'Child Placing Agency' : getString($, sel);
 
@@ -130,6 +147,8 @@ export const getKeysMap = (operationID: number, operationType: string, numDefice
 	issuance_date: { sel: 'font:contains("Issuance Date:")', func: getDate },
 	open_foster_homes: { sel: 'font:contains("Open Foster Homes:")', func: getCPANumber.bind(null, operationType) },
 	open_branch_offices: { sel: 'font:contains("Open Branch Offices:")', func: getCPANumber.bind(null, operationType) },
+    num_admin_penalties: { sel: ['font:contains("Number Of Admin")', 'font:contains("Number of Admin")'], func: getAdminPenalties },
+    is_main_branch: { sel: 'font:contains("related to this Branch only")', func: getIsMainBranch.bind(null, operationType) },
 	corrective_action: { sel: 'font:contains("Corrective Action:")', func: getBoolean },
 	adverse_action: { sel: 'font:contains("Adverse Action:")', func: getBoolean },
 	temporarily_closed: { sel: 'font:contains("Temporarily Closed:")', func: getBoolean },

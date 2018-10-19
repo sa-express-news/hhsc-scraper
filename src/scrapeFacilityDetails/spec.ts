@@ -5,6 +5,8 @@ import scrapeFacilityDetails, {
 	getOperationType,
 	isTargetFacility,
 	getString,
+	getAdminPenalties,
+	getIsMainBranch,
 	getCPANumber,
 	getBoolean,
 	getPrograms,
@@ -198,8 +200,12 @@ test('test all scraped string data from CPA response', async t => {
 test('test all scraped number data from CPA response', async t => {
 	const $ = await requestFacilityDetailsPage(231654, logger());
 
-	let result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Foster Homes:")');
-	let expectation = 25;
+	let result = getAdminPenalties($, ['font:contains("Number Of Admin")', 'font:contains("Number of Admin")']);
+	let expectation = 2;
+	t.equal(result, expectation);
+
+	result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Foster Homes:")');
+	expectation = 25;
 	t.equal(result, expectation);
 
 	result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Branch Offices:")');
@@ -222,6 +228,16 @@ test('test all scraped boolean data from CPA response', async t => {
 
 	result = getBoolean($, 'font:contains("Temporarily Closed:")');
 	expectation = false;
+	t.equal(result, expectation);
+
+	t.end();
+});
+
+test('test is branch CPA', async t => {
+	const $ = await requestFacilityDetailsPage(137325, logger());
+
+	let result = getIsMainBranch('Child Placing Agency', $, 'font:contains("related to this Branch only")');
+	let expectation = false;
 	t.equal(result, expectation);
 
 	t.end();
@@ -268,7 +284,7 @@ test('scrapeFacilityDetails: End to end deepequals test of successful scrape', a
 			operation_name: 'TEXAS DEPT OF FPS REG 08',
 			programs_provided: 'Child Placing Agency',
 			location_address: '3635 SE MILITARY DR SAN ANTONIO, TX 78223',
-			phone: '210-337-3310',
+			phone: '210-337-3214',
 			county: 'BEXAR',
 			website: 'www.dfps.state.tx.us/Child_Protection/se',
 			email: 'None',
@@ -276,10 +292,12 @@ test('scrapeFacilityDetails: End to end deepequals test of successful scrape', a
 			issuance_date: '8/25/1988',
 			open_foster_homes: 0,
 			open_branch_offices: 0,
+			num_admin_penalties: 0,
+			is_main_branch: true,
 			corrective_action: false,
 			adverse_action: false,
 			temporarily_closed: false,
-			num_deficiencies_cited: 37,
+			num_deficiencies_cited: 28,
 		}
 	};
 

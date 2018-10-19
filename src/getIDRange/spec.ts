@@ -33,18 +33,18 @@ test('spreadRange should take two sequential numbers and spread them into iterat
 
 test('buildRange should figure out start point and remining spaces from attemptedIDs and then tack remaining scope on to build the full range', t => {
 	const attemptedIDs = {
-        last_successful: 1000,
-        last_attempted: 1500,
+        last_successful: 60000,
+        last_attempted: 65000,
 	    total_from_last_scrape: 46,
         total_in_database: 300,
-	    facility_scraped_deficencies_rejected: [256, 400, 836],
-	    facility_timeout_or_alert_page: [321, 699],
+	    facility_scraped_deficencies_rejected: [61256, 61400, 63836],
+	    facility_timeout_or_alert_page: [62321, 64699],
 	};
 	const scope = 1000
 	const range = buildRange(attemptedIDs, scope);
 
 	let arrResult = range.slice(0, 7);
-	let arrExpected = [256,400,836,321,699,1501,1502];
+	let arrExpected = [61256,61400,63836,62321,64699,65001,65002];
 	t.deepEqual(arrResult, arrExpected);
 
 	let numResult = range.length;

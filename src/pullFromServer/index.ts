@@ -40,13 +40,34 @@ const setOperationsConfigObj = (paths: OperationPaths) => ({
 
 const getOperations = (logger: Logger) => rp(setOperationsConfigObj(getOperationPaths()))
 				.then((res: Array<OperationHash>) => res)
-				.catch((err: any) => logger.error(err));
+				.catch((err: any) => {
+					if (err && err.statusCode && err.statusCode === 400) {
+						logger.error('Data file not found on server. If this is the first time the scraper has run or no data has been found yet, don\'t worry about it.');
+					} else {
+						logger.error(err);
+					}
+					return [];
+				});
 
 const getAttemptedIDs = (logger: Logger) => rp(setIDsConfigObj(getIDsPaths()))
 				.then((res: string) => {
 					return JSON.parse(JSON.stringify(res)); // file is not JSON in response but an obj string, so we stingify before parsing
 				})
-				.catch((err: any) => logger.error(err));
+				.catch((err: any) => {
+					if (err && err.statusCode && err.statusCode === 404) {
+						logger.error('AttemptedIDs not found on server. If this is the first time the scraper has run, don\'t worry about it.');
+					} else {
+						logger.error(err);
+					}
+					return {
+				        last_successful: 0,
+				        last_attempted: 0,
+				        total_from_last_scrape: 0,
+				        total_in_database: 0,
+				        facility_scraped_deficencies_rejected: [],
+				        facility_timeout_or_alert_page: [],
+				    };
+				});
 
 export default {
 	getOperations,

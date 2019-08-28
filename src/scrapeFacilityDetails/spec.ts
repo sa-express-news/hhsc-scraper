@@ -179,7 +179,7 @@ test('test all scraped string data from CPA response', async t => {
 	t.equal(result, expectation);
 
 	result = getString($, 'font:contains("Email Address:")');
-	expectation = 'hh.admin@havehaven.org';
+	expectation = 'emesfin@havehaven.org';
 	t.equal(result, expectation);
 
 	result = getString($, 'font:contains("Type of Issuance:")');
@@ -201,11 +201,11 @@ test('test all scraped number data from CPA response', async t => {
 	const $ = await requestFacilityDetailsPage(231654, logger());
 
 	let result = getAdminPenalties($, ['font:contains("Number Of Admin")', 'font:contains("Number of Admin")']);
-	let expectation = 2;
+	let expectation = 3;
 	t.equal(result, expectation);
 
 	result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Foster Homes:")');
-	expectation = 25;
+	expectation = 24;
 	t.equal(result, expectation);
 
 	result = getCPANumber('Child Placing Agency-Adoption Services', $, 'font:contains("Open Branch Offices:")');
@@ -216,10 +216,10 @@ test('test all scraped number data from CPA response', async t => {
 });
 
 test('test all scraped boolean data from CPA response', async t => {
-	const $ = await requestFacilityDetailsPage(153033, logger());
+	const $ = await requestFacilityDetailsPage(231654, logger());
 
 	let result = getBoolean($, 'font:contains("Corrective Action:")');
-	let expectation = true;
+	let expectation = false;
 	t.equal(result, expectation);
 
 	result = getBoolean($, 'font:contains("Adverse Action:")');
@@ -297,7 +297,7 @@ test('scrapeFacilityDetails: End to end deepequals test of successful scrape', a
 			corrective_action: false,
 			adverse_action: false,
 			temporarily_closed: false,
-			num_deficiencies_cited: 28,
+			num_deficiencies_cited: 20,
 		}
 	};
 

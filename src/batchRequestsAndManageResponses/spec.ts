@@ -85,11 +85,11 @@ test('batchRequestsAndManageResponses: End to end test of 13 Ids batched in grou
     const operations = removeDuplicates(addIDs(operationsRaw, 0));
 
     let lenResult = operations.length;
-    let lenExpected = 41;
+    let lenExpected = 32;
     t.equal(lenResult, lenExpected);
 
     let strResult = operations[operations.length - 1].narrative;
-    let strExpected = 'One staff person did not have a FBI background check.'
+    let strExpected = 'A child dismantled an alarm, opened a door, and harmed a child. The caregivers were unaware of this activity.'
     t.equal(strResult, strExpected);
 
     t.end();

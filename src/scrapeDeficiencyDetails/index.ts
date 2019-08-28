@@ -87,13 +87,15 @@ export const pluckValues = async (cells: Array<string | number>, popupContent: D
 };
 
 // we grab the response data after clicking the popup link and parse it using regex.
-export const parseNarrativeResponse = (response: string) => {
+export const parseNarrativePopup = (response: string) => {
 	const bump = response.indexOf('\'FB|0|\\\'') !== -1 ? 4 : 3; // handling the oddities of the string response
 	const start = '0|/*DX*/({\'result\':{\'html\':\'FB|'.length + bump;
-	const split = response.indexOf('^');
-	const narrative = response.slice(start, split).trim().replace(/\s\s+/g, ' ');
+	const firstSplit = response.indexOf('^');
+	const lastSplit = response.lastIndexOf('^');
+	const narrative = response.slice(start, firstSplit).trim().replace(/\s\s+/g, ' ');
 	const technical_assistance_given = response.indexOf('^Yes') !== -1;
-	return { narrative, technical_assistance_given };
+	const correction = response.slice(lastSplit + 1, response.indexOf('\\\'\'},\'id\'')).trim().replace(/\\\\r\\\\n/, ' ');
+	return { narrative, technical_assistance_given, correction };
 };
 
 export const isCrossThreadError = (narrative: string) => {
@@ -110,7 +112,7 @@ export const scrapeNarrativePopups = async (element: ElementHandle, page: Page, 
 
 	if (response) {
 		await closeNarrativeBox(page, logger);
-		return isCrossThreadError(response) ? await scrapeNarrativePopups(element, page, url, logger) : parseNarrativeResponse(response);
+		return isCrossThreadError(response) ? await scrapeNarrativePopups(element, page, url, logger) : parseNarrativePopup(response);
 	} else {
 		return Object.assign({}, { technical_assistance_given: null }, handleNarrativeError('Popup click failed!', logger));
 	}

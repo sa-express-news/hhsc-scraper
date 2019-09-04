@@ -30,7 +30,7 @@ const handleError = (payload: Array<DeficiencyHash>, err: any, logger: Logger) =
 
 const handleNarrativeError = (err: any, logger: Logger) => {
 	logger.error(err);
-	return { narrative: 'Error retrieving' };
+	return { narrative: 'Error retrieving', correction: 'Error retrieving', };
 }
 
 const defaultPayload = () => ({
@@ -42,7 +42,8 @@ const defaultPayload = () => ({
     corrected_date: 'None',
     date_correction_verified: 'None',
     technical_assistance_given: null,
-    narrative: 'None',
+	narrative: 'None',
+	correction: 'None',
 });
 
 export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
@@ -54,7 +55,8 @@ export const getValsMap = (popupContent: DeficencyPopUpHash) => ({
     corrected_date: { func: getDate, cellsIdx: 5 },
     date_correction_verified: { func: getDate, cellsIdx: 6 },
     technical_assistance_given: { func: () => popupContent.technical_assistance_given },
-    narrative: { func: () => popupContent.narrative },
+	narrative: { func: () => popupContent.narrative },
+	correction: { func: () => popupContent.correction },
 });
 
 export const getURL = (id: number) => `https://www.dfps.state.tx.us/Child_Care/Search_Texas_Child_Care/CCLNET/Source/Provider/ppComplianceHistory.aspx?fid=${id}&tab=2`;
@@ -88,13 +90,16 @@ export const pluckValues = async (cells: Array<string | number>, popupContent: D
 
 // we grab the response data after clicking the popup link and parse it using regex.
 export const parseNarrativePopup = (response: string) => {
-	const bump = response.indexOf('\'FB|0|\\\'') !== -1 ? 4 : 3; // handling the oddities of the string response
-	const start = '0|/*DX*/({\'result\':{\'html\':\'FB|'.length + bump;
-	const firstSplit = response.indexOf('^');
-	const lastSplit = response.lastIndexOf('^');
-	const narrative = response.slice(start, firstSplit).trim().replace(/\s\s+/g, ' ');
-	const technical_assistance_given = response.indexOf('^Yes') !== -1;
-	const correction = response.slice(lastSplit + 1, response.indexOf('\\\'\'},\'id\'')).trim().replace(/\\\\r\\\\n/, ' ');
+	const bump 	= response.indexOf("FB|0|\\'") !== -1 ? 4 : 3; // handling the oddities of the string response
+	const start = "0|/*DX*/({'result':{'html':'FB|".length + bump;
+	const end	= response.indexOf("\\''},'id':0})");
+
+	const pluckFromPopup = (start: number, end: number): string => response.slice(start, end).trim().replace(/\s\s+/g, ' ');
+	
+	const narrative 					= pluckFromPopup(start, response.indexOf('^'));
+	const technical_assistance_given 	= response.indexOf('^Yes') !== -1;
+	const correction 					= pluckFromPopup(response.lastIndexOf('^') + 1, end).replace(/\\\\r\\\\n/, ' ');
+
 	return { narrative, technical_assistance_given, correction };
 };
 

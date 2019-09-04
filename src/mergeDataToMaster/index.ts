@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 // interfaces
 import { UniqOperationHash, AttemptedIDHandlerInstance } from '../interfaces';
 
-// we're handling to possible error situations here. 
+// we're handling two possible error situations here. 
 // 1. The scraped deficency already exists in DB 
 // 2. Due to HHSC site bugs, very occassionally a defiency row can be scraped twice. If this happens, we need to remove those duplicates
 // removeDuplicates creates a Set which we use to store and identify existing hashes. Array.filter is then used to discard dups.

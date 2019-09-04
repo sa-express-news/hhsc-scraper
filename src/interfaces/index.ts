@@ -84,6 +84,7 @@ export interface FacilityResponse {
 export interface DeficencyPopUpHash {
     technical_assistance_given: boolean;
     narrative: string;
+    correction: string;
 }
 
 // columns from the operation deficiencies page
@@ -162,6 +163,7 @@ export interface DeficencyHashMap {
     date_correction_verified: DeficencyHashMapUtils;
     technical_assistance_given: DeficencyHashMapUtils;
     narrative: DeficencyHashMapUtils;
+    correction: DeficencyHashMapUtils;
 }
 
 // to push to server

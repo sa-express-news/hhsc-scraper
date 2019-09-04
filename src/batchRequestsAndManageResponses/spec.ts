@@ -18,6 +18,7 @@ const operation = {
     date_correction_verified: 'this is a string',
     technical_assistance_given: null,
     narrative: 'this is a string',
+    correction: 'this is a string',
     operation_id: 873652,
     operation_number: 'facility string',
     operation_type: 'facility string',
